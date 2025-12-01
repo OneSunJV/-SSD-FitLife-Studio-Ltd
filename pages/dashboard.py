@@ -3,11 +3,11 @@ from tkinter import ttk
 
 LARGEFONT =("Verdana", 35)
 
-class Calendar2Page:
+class DashboardPage:
     def __init__(self, parent):
         self.frame = tk.Frame(parent);
 
-        label = ttk.Label(self.frame, text="Calendar2")
+        label = ttk.Label(self.frame, text="Dashboard")
         label.grid(row = 0, column = 0)
 
     def get_frame(self):
