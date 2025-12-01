@@ -63,14 +63,14 @@ class SystemLayout:
     
     # ---------------- Header ---------------- #
     def init_header(self):
-        frame = tk.Frame(self.root, bg="red", width=1000, height=120)
+        frame = tk.Frame(self.root, bg="red", width=1000, height=60)
         frame.grid(row=0, column=1, sticky="nsew")
         frame.grid_propagate(False)
         self.header_frame = frame
 
     # ---------------- Page Container ---------------- #
     def init_page_container(self):
-        self.page_container = tk.Frame(self.root, bg="blue", width=1000, height=600)
+        self.page_container = tk.Frame(self.root, bg="blue", width=1000, height=660)
         self.page_container.grid(row=1, column=1)
 
     def get_page_container(self):
