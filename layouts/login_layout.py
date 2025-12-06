@@ -8,4 +8,4 @@ class LoginLayout:
         self.root = root
         self.root.title("Login Page")
         self.page_container = login.LoginUI()
-        self.page_container.grid()
+        self.page_container.grid(sticky = tk.NSEW)
