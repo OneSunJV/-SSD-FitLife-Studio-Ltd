@@ -3,9 +3,9 @@ from tkinter import ttk
 
 LARGEFONT =("Verdana", 35)
 
-class DashboardPage:
-    def __init__(self, parent):
-        self.frame = tk.Frame(parent);
+class Calendar2Page:
+    def __init__(self, frame):
+        self.frame = frame;
 
         label = ttk.Label(self.frame, text="Dashboard")
         label.grid(row = 0, column = 0)
