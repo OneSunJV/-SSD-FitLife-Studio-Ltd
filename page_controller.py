@@ -6,10 +6,10 @@ class PageController:
         self.frames = [];        
 
     def register_page(self, pageClass):
-        page = pageClass(self.container)
-        frame = page.get_frame()
-        self.frames.append(frame)
-        frame.grid(row = 0, column = 0)
+        pagesFrame = tk.Frame(self.container, bg="blue", width=1000, height=660)
+        pageClass(pagesFrame)
+        self.frames.append(pagesFrame)
+        pagesFrame.grid(row = 0, column = 0, sticky=tk.NSEW)
 
     def display_page(self, page):
         frame = self.frames[page]
