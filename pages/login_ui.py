@@ -1,13 +1,15 @@
 import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import ttk
-from tkinter.messagebox import showerror, showinfo
-from PIL import Image, ImageTk # Allows me to display images.
+from PIL import Image, ImageTk
+from controllers.login_backend import validate_login_credentials
 
 class LoginUI(ttk.Frame):
-    def __init__(self):
+    def __init__(self, root):
         super().__init__(width=1280, height=720)
         self.grid_propagate(True)
+
+        self.root = root
 
         self.columnconfigure(0, weight = 1)
         self.columnconfigure(1, weight = 1)
@@ -79,11 +81,14 @@ class LoginUI(ttk.Frame):
         self.password_label.grid(column = 0, row = 5, sticky = tk.W, padx = 10, pady = 5)
 
     def setup_entries(self):
-        self.username_entry = ttk.Entry(self.login_box)
+        self.username_data = tk.StringVar()
+        self.username_entry = ttk.Entry(self.login_box, textvariable = self.username_data)
         self.username_entry.grid(column = 0, row = 4, ipadx = 100, ipady = 5, pady = 5)
-        self.password_entry = ttk.Entry(self.login_box)
+
+        self.password_data = tk.StringVar()
+        self.password_entry = ttk.Entry(self.login_box, textvariable = self.password_data)
         self.password_entry.grid(column = 0, row = 6, ipadx = 100, ipady = 5, pady = 5)
 
     def setup_button(self):
-        self.login_button = ttk.Button(self.login_box, text = 'Login')
+        self.login_button = ttk.Button(self.login_box, text = 'Login', command = lambda: validate_login_credentials(self.root, self.username_data.get(), self.password_data.get()))
         self.login_button.grid(column = 0, row = 7, ipadx = 50, ipady = 20, padx = 10, pady = 15)
