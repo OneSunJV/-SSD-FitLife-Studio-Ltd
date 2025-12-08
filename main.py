@@ -15,7 +15,7 @@ PAGES = [
 
 defaultSystemPage = 0
 
-bypassLoginPage = True
+bypassLoginPage = False
 
 
 # ----------------------------Main Function--------------------------- #
