@@ -167,8 +167,9 @@ class CalendarPage:
         self.update_days_view()
 
     def this_month(self):
-        self.selectedYear = datetime.now().year
-        self.selectedMonth = datetime.now().month
+        if self.selectedMonth != datetime.now().month:
+            self.selectedYear = datetime.now().year
+            self.selectedMonth = datetime.now().month
 
-        self.update_date_string()
-        self.update_days_view()
+            self.update_date_string()
+            self.update_days_view()
