@@ -72,7 +72,7 @@ class SystemLayout:
     # ---------------- Page Container ---------------- #
     def init_page_container(self):
         self.page_container = tk.Frame(self.root, bg="blue", width=1000, height=660)
-        self.page_container.grid(row=1, column=1)
+        self.page_container.grid(row=1, column=1, sticky=tk.NSEW)
 
     def get_page_container(self):
         return self.page_container
