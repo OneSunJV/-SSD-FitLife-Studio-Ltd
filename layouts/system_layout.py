@@ -1,4 +1,5 @@
-import tkinter as tk;
+import tkinter as tk
+from page_controller import PageController
 #from tkinter import ttk;
 
 
@@ -43,7 +44,7 @@ class SystemLayout:
         self.sidebar_frame = frame
 
      # ---------------- Sidebar Buttons ---------------- #
-    def create_sidebar_buttons(self, pages_list, page_controller):
+    def create_sidebar_buttons(self, pages_list, page_controller: PageController):
         """
         Create sidebar navigation buttons based on pages_list.
 
@@ -74,6 +75,6 @@ class SystemLayout:
         self.page_container.grid(row=1, column=1, sticky=tk.NSEW)
 
     def get_page_container(self):
-        return self.page_container;
+        return self.page_container
 
 # Contain all common layout bits (navigation / header)
