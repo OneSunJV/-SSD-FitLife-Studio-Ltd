@@ -59,9 +59,9 @@ class CalendarPage:
             self.dateString.bind("<Button-1>", lambda e: self.update_date_string())
 
     def create_navigation_buttons(self):
-        this_month_button = ttk.Button(self.frame, text="This month")
-        previous_month_button = ttk.Button(self.frame, text="<")
-        next_month_button = ttk.Button(self.frame, text=">")
+        this_month_button = ttk.Button(self.frame, text="This month", command=self.this_month)
+        previous_month_button = ttk.Button(self.frame, text="<", command=self.previous_month)
+        next_month_button = ttk.Button(self.frame, text=">", command=self.next_month)
 
         this_month_button.grid(row=0, column=1)
         previous_month_button.grid(row=0, column=2)
@@ -80,8 +80,8 @@ class CalendarPage:
             prev_month, prev_months_year = self.get_previous_month(self.selectedMonth)
             _, days_in_prev_month = monthrange(prev_months_year, prev_month)
 
-            for i in range(days_in_prev_month-first_day_offset, days_in_month+1):
-                dates_in_range.append({"month": prev_month, "day": i+1})
+            for i in range(days_in_prev_month-first_day_offset, days_in_prev_month):
+                dates_in_range.append({"month": prev_month, "day": i})
 
         for i in range(days_in_month):
             dates_in_range.append({"month": self.selectedMonth, "day": i+1})
@@ -125,3 +125,30 @@ class CalendarPage:
             return 1, (self.selectedYear + 1)
         else:
             return current_month + 1, self.selectedYear
+
+    def next_month(self):
+        if self.selectedMonth == 12:
+            self.selectedMonth = 1
+            self.selectedYear += 1
+        else:
+            self.selectedMonth += 1
+
+        self.update_date_string()
+        self.update_days_view()
+
+    def previous_month(self):
+        if self.selectedMonth == 1:
+            self.selectedMonth = 12
+            self.selectedYear -= 1
+        else:
+            self.selectedMonth -= 1
+
+        self.update_date_string()
+        self.update_days_view()
+
+    def this_month(self):
+        self.selectedYear = datetime.now().year
+        self.selectedMonth = datetime.now().month
+
+        self.update_date_string()
+        self.update_days_view()
