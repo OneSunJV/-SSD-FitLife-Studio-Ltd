@@ -1,10 +1,12 @@
 import tkinter as tk
 from tkinter.messagebox import showerror, showinfo
-from controllers.system_layout import SystemLayoutController
+
+from layouts.system_layout import SystemLayout
 
 def validate_login_credentials(root, username, password):
     if username == "JohnDoe" and password == "12345":
-        showinfo(title = "Login Successful!", message = ("Success! The login details you have entered are valid. Welcome ", username, " to SportsDev!"))
-        SystemLayoutController.load_main_system(root)
+        showinfo(title = "Login Successful!", message = f"Success! The login details you have entered are valid. Welcome {username} to SportsDev!")
+        root.destroy() # Destroy the login window
+        SystemLayout()
     else:
-        showerror(title = "Login Failed!", message = ("Fail! An account with these credentials does not exist in our system! If you believe this is a mistake, please contact your organisation's administator(s) or our IT Service Desk. "))
+        showerror(title = "Login Failed!", message = "Fail! An account with these credentials does not exist in our system! If you believe this is a mistake, please contact your organisation's administrator(s) or our IT Service Desk.")
