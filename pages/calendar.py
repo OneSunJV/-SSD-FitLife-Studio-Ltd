@@ -3,13 +3,24 @@ from tkinter import ttk
 from calendar import monthrange, month_name
 from datetime import datetime
 
+
 DAYS_IN_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 DISABLED_TEXT_COLOUR = "#ababab"
+
+class Event:
+    def __init__(self, title):
+        self.title = title
+
+class DateInfo:
+    def __init__(self, day, month, events: list[Event]):
+        self.day = day
+        self.month = month
+        self.events = events
 
 class CalendarPage:
     def __init__(self, frame):
         self.selectedYear = datetime.now().year
-        self.selectedMonth = 6
+        self.selectedMonth = datetime.now().month
         self.currentDay = datetime.now().day
 
         self.frame = frame
@@ -90,6 +101,9 @@ class CalendarPage:
             next_month, _next_months_year = self.get_next_month(self.selectedMonth)
             dates_in_range.append({"month": next_month, "day": i+1}) # We can never go over by more than 7 so we don't have to worry about how many days are in the month.
 
+        # ToDo query database using dates_in_range to get the events for the given dates
+        calendar_days: list[DateInfo] = list(map(lambda d: DateInfo(d['day'], d['month'], [Event("Example Event 1"), Event("Example Event 2"), Event("Example Event 3")]), dates_in_range))
+
         row_offset = 1 # First row is used to display day of week
 
         for idx, day in enumerate(DAYS_IN_WEEK):
@@ -98,17 +112,23 @@ class CalendarPage:
 
         for row in range(6): # 6 weeks
             for column in range(7): # 7 days per week
-                date = dates_in_range[(column + 1) + (7 * row) - 1]
-                day = date['day']
-                month = date['month']
-                label_foreground = "black" if month == self.selectedMonth else DISABLED_TEXT_COLOUR
+                date = calendar_days[(column + 1) + (7 * row) - 1]
+                label_foreground = "black" if date.month == self.selectedMonth else DISABLED_TEXT_COLOUR
 
                 frame = ttk.Frame(self.days_frame, relief="solid", borderwidth=5)
-                label = ttk.Label(frame, text=day, foreground=label_foreground)
+                frame.grid_columnconfigure(0, weight=1)
+                frame.grid_rowconfigure(0, weight=1)
+                frame.grid_rowconfigure(1, weight=1)
+                frame.grid_rowconfigure(2, weight=1)
+                frame.grid_rowconfigure(3, weight=1)
+
+                label = ttk.Label(frame, text=date.day, foreground=label_foreground)
                 frame.grid(row=row+row_offset, column=column, sticky=tk.NSEW)
                 label.grid(row=0, column=0, sticky=tk.NW)
+                for idx, event in enumerate(date.events):
+                    button = ttk.Button(frame, text=event.title)
+                    button.grid(row=idx+1, column=0, sticky=tk.EW)
 
-    
     @staticmethod
     def month_to_string(month_integer: int):
         return month_name[month_integer]
