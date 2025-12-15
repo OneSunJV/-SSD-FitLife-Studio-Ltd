@@ -1,11 +1,14 @@
-import tkinter as tk;
-#from tkinter import ttk;
+import tkinter as tk
 
+from config.pages import PAGES
+from page_controller import PageController
 
 class SystemLayout:
-    def __init__(self, root):
-        self.root = root
+    def __init__(self):
+        self.root = tk.Tk()
         self.root.title("FitLife Studios - WBMS")
+
+        self.page_container = None
 
         #(Columns) Sidebar, Main Area
         self.root.columnconfigure(0, weight = 0)
@@ -19,6 +22,18 @@ class SystemLayout:
         self.init_sidebar()
         self.init_header()
         self.init_page_container()
+
+        self.page_controller = PageController(self.page_container)
+        self.create_sidebar_buttons(PAGES)
+
+        for page in PAGES:
+            self.page_controller.register_page(page["className"])
+
+        for idx, page in enumerate(PAGES):
+            if page["default"]:
+                self.page_controller.display_page(idx)
+                break
+
     
   # ---------------- Sidebar ---------------- #
     def init_sidebar(self):
@@ -43,7 +58,7 @@ class SystemLayout:
         self.sidebar_frame = frame
 
      # ---------------- Sidebar Buttons ---------------- #
-    def create_sidebar_buttons(self, pages_list, page_controller):
+    def create_sidebar_buttons(self, pages_list):
         """
         Create sidebar navigation buttons based on pages_list.
 
@@ -56,7 +71,7 @@ class SystemLayout:
             btn = tk.Button(
                 self.sidebar_frame,
                 text=page["displayName"],
-                command=lambda i=idx: page_controller.display_page(i)
+                command=lambda i=idx: self.page_controller.display_page(i)
             )
             btn.grid(row=idx+1, column=0, sticky="ew", padx=10, pady=5)
         
@@ -73,7 +88,5 @@ class SystemLayout:
         self.page_container = tk.Frame(self.root, bg="blue", width=1000, height=660)
         self.page_container.grid(row=1, column=1, sticky=tk.NSEW)
 
-    def get_page_container(self):
-        return self.page_container;
 
 # Contain all common layout bits (navigation / header)

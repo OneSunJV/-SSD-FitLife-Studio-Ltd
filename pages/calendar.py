@@ -1,9 +1,21 @@
-import tkinter as tk;
+import tkinter as tk
 from tkinter import ttk
 from calendar import monthrange, month_name
 from datetime import datetime
 
-LARGEFONT =("Verdana", 35)
+
+DAYS_IN_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+DISABLED_TEXT_COLOUR = "#ababab"
+
+class Event:
+    def __init__(self, title):
+        self.title = title
+
+class DateInfo:
+    def __init__(self, day, month, events: list[Event]):
+        self.day = day
+        self.month = month
+        self.events = events
 
 class CalendarPage:
     def __init__(self, frame):
@@ -11,32 +23,152 @@ class CalendarPage:
         self.selectedMonth = datetime.now().month
         self.currentDay = datetime.now().day
 
-        self.frame = frame;
+        self.frame = frame
+        self.frame.grid_columnconfigure(0, weight=50)
+        self.frame.grid_columnconfigure(1, weight=1)
+        self.frame.grid_columnconfigure(2, weight=1)
+        self.frame.grid_columnconfigure(3, weight=1)
+        self.frame.grid_rowconfigure(0, weight=1)
+        self.frame.grid_rowconfigure(1, weight=50)
 
-        label = ttk.Label(self.frame, text="Calendar")
-        label.grid(row = 0, column = 0)
+        self.days_frame: tk.Frame | None = None
+        self.dateString: ttk.Label | None = None
 
-        self.updateYearLabel()
-        self.updateMonthLabel()
-    
-    def select_month(self, month):
-        self.selectedMonth = month
-        daysInMonth = monthrange(self.selectedYear, month)
-        self.updateMonthLabel()
+        self.update_date_string()
+        self.create_navigation_buttons()
+        self.update_days_view()
 
-        # Update display
+    def create_days_frame(self):
+        self.days_frame = tk.Frame(self.frame)
+        self.days_frame.grid(row=1, columnspan=4, sticky=tk.NSEW)
+        self.days_frame.grid_rowconfigure(0, weight=1)
+        self.days_frame.grid_rowconfigure(1, weight=8)
+        self.days_frame.grid_rowconfigure(2, weight=8)
+        self.days_frame.grid_rowconfigure(3, weight=8)
+        self.days_frame.grid_rowconfigure(4, weight=8)
+        self.days_frame.grid_rowconfigure(5, weight=8)
+        self.days_frame.grid_rowconfigure(6, weight=8)
+        self.days_frame.grid_columnconfigure(0, weight=1, uniform="equal")
+        self.days_frame.grid_columnconfigure(1, weight=1, uniform="equal")
+        self.days_frame.grid_columnconfigure(2, weight=1, uniform="equal")
+        self.days_frame.grid_columnconfigure(3, weight=1, uniform="equal")
+        self.days_frame.grid_columnconfigure(4, weight=1, uniform="equal")
+        self.days_frame.grid_columnconfigure(5, weight=1, uniform="equal")
+        self.days_frame.grid_columnconfigure(6, weight=1, uniform="equal")
 
-    def updateYearLabel(self):
-        yearLabel = ttk.Label(self.frame, text="Year:")
-        yearLabel.grid(row=1, column=0)
-        selectedYearLabel = ttk.Label(self.frame, text=f"{self.selectedYear}")
-        selectedYearLabel.grid(row=2, column=0)
+    def update_date_string(self):
 
-    def updateMonthLabel(self):
-        monthLabel = ttk.Label(self.frame, text="Month:")
-        monthLabel.grid(row=3, column=0)
-        selectedMonthLabel = ttk.Label(self.frame, text=f"{self.month_to_string(self.selectedMonth)}")
-        selectedMonthLabel.grid(row=4, column=0)
-    
-    def month_to_string(self, monthInteger: int):
-        return month_name[monthInteger]
+        month_str = CalendarPage.month_to_string(self.selectedMonth)
+        new_string = f"{month_str} - {self.selectedYear}"
+
+        # Update label if it already exists, or create a new one.
+        if self.dateString is not None:
+            self.dateString.config(text=new_string)
+        else:
+            self.dateString = ttk.Label(self.frame, text=new_string, font=("Verdana", 25))
+            self.dateString.grid(row=0, column=0, sticky=tk.W)
+            self.dateString.bind("<Button-1>", lambda e: self.update_date_string())
+
+    def create_navigation_buttons(self):
+        this_month_button = ttk.Button(self.frame, text="This month", command=self.this_month)
+        previous_month_button = ttk.Button(self.frame, text="<", command=self.previous_month)
+        next_month_button = ttk.Button(self.frame, text=">", command=self.next_month)
+
+        this_month_button.grid(row=0, column=1)
+        previous_month_button.grid(row=0, column=2)
+        next_month_button.grid(row=0, column=3)
+
+    def update_days_view(self):
+        if self.days_frame is not None:
+            self.days_frame.destroy() # Destroy frame if it already exists
+        self.create_days_frame() # Create a new days frame
+
+        first_day_offset, days_in_month = monthrange(self.selectedYear, self.selectedMonth)
+
+        dates_in_range = []
+
+        if first_day_offset > 0:
+            prev_month, prev_months_year = self.get_previous_month(self.selectedMonth)
+            _, days_in_prev_month = monthrange(prev_months_year, prev_month)
+
+            for i in range(days_in_prev_month-first_day_offset, days_in_prev_month):
+                dates_in_range.append({"month": prev_month, "day": i})
+
+        for i in range(days_in_month):
+            dates_in_range.append({"month": self.selectedMonth, "day": i+1})
+
+        for i in range(6*7 - len(dates_in_range)): # Fill the remaining values with the next month (there are 6 rows * 7 columns)
+            next_month, _next_months_year = self.get_next_month(self.selectedMonth)
+            dates_in_range.append({"month": next_month, "day": i+1}) # We can never go over by more than 7 so we don't have to worry about how many days are in the month.
+
+        # ToDo query database using dates_in_range to get the events for the given dates
+        calendar_days: list[DateInfo] = list(map(lambda d: DateInfo(d['day'], d['month'], [Event("Example Event 1"), Event("Example Event 2"), Event("Example Event 3")]), dates_in_range))
+
+        row_offset = 1 # First row is used to display day of week
+
+        for idx, day in enumerate(DAYS_IN_WEEK):
+            label = ttk.Label(self.days_frame, text=day)
+            label.grid(row=0, column=idx)
+
+        for row in range(6): # 6 weeks
+            for column in range(7): # 7 days per week
+                date = calendar_days[(column + 1) + (7 * row) - 1]
+                label_foreground = "black" if date.month == self.selectedMonth else DISABLED_TEXT_COLOUR
+
+                frame = ttk.Frame(self.days_frame, relief="solid", borderwidth=5)
+                frame.grid_columnconfigure(0, weight=1)
+                frame.grid_rowconfigure(0, weight=1)
+                frame.grid_rowconfigure(1, weight=1)
+                frame.grid_rowconfigure(2, weight=1)
+                frame.grid_rowconfigure(3, weight=1)
+
+                label = ttk.Label(frame, text=date.day, foreground=label_foreground)
+                frame.grid(row=row+row_offset, column=column, sticky=tk.NSEW)
+                label.grid(row=0, column=0, sticky=tk.NW)
+                for idx, event in enumerate(date.events):
+                    button = ttk.Button(frame, text=event.title)
+                    button.grid(row=idx+1, column=0, sticky=tk.EW)
+
+    @staticmethod
+    def month_to_string(month_integer: int):
+        return month_name[month_integer]
+
+    def get_previous_month(self, current_month: int) -> (int, int):
+        # If current month is January, return December and the previous year
+        if current_month == 1:
+            return 12, (self.selectedYear - 1)
+        else: # Else just return the previous month and the current year.
+            return current_month - 1, self.selectedYear
+
+    def get_next_month(self, current_month: int) -> (int, int):
+        if current_month == 12:
+            return 1, (self.selectedYear + 1)
+        else:
+            return current_month + 1, self.selectedYear
+
+    def next_month(self):
+        if self.selectedMonth == 12:
+            self.selectedMonth = 1
+            self.selectedYear += 1
+        else:
+            self.selectedMonth += 1
+
+        self.update_date_string()
+        self.update_days_view()
+
+    def previous_month(self):
+        if self.selectedMonth == 1:
+            self.selectedMonth = 12
+            self.selectedYear -= 1
+        else:
+            self.selectedMonth -= 1
+
+        self.update_date_string()
+        self.update_days_view()
+
+    def this_month(self):
+        self.selectedYear = datetime.now().year
+        self.selectedMonth = datetime.now().month
+
+        self.update_date_string()
+        self.update_days_view()
