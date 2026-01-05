@@ -137,6 +137,15 @@ class MemberPage:
         y_position = 30
         y_gap = 40
 
+        #ID label & entry
+        if (tab_name == "find") or (tab_name == "filter"):
+            id_lbl = ttk.Label(window, text="ID", style="MemberWidget.TLabel")
+            id_lbl.place(x = x_position, y = y_position)
+            id_txt = ttk.Entry(window, name="id_txt", font=widget_font)
+            id_txt.place(x = x_position + x_gap, y = y_position)
+            #Update y-position for next label & entry
+            y_position += y_gap
+
         #First name label & entry
         first_name_lbl = ttk.Label(window, text="First Name", style="MemberWidget.TLabel")
         first_name_lbl.place(x = x_position, y = y_position)
@@ -209,6 +218,7 @@ class MemberPage:
         
         elif tab_name == "find":
             #sets all widgets to be readonly and disables date pickers and combo box in the Find Member tab
+            id_txt.state(["readonly"])
             first_name_txt.state(["readonly"])
             last_name_txt.state(["readonly"])
             dob_dtp.state(["disabled"])
@@ -224,6 +234,7 @@ class MemberPage:
             #Apply button
             apply_btn = tk.Button(window, name="apply_btn", text="Apply", font=self.button_font, command=lambda: self.apply_filter(
             window,
+            id_txt.get(),
             first_name_txt.get(), 
             last_name_txt.get(), 
             dob_dtp.get_date(),
@@ -353,7 +364,7 @@ class MemberPage:
         filter_win.mainloop()
     
     #Subroutine to apply the filters input by the user - called by pressing Apply button
-    def apply_filter(self, filter_win, first_name, last_name, dob, email, phone, membership, next_payment_date):
+    def apply_filter(self, filter_win, id, first_name, last_name, dob, email, phone, membership, next_payment_date):
         self.member_list.delete(0, tk.END)
         #needs code adding to check database and only display matching records
         filter_win.destroy()
