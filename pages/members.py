@@ -295,17 +295,18 @@ class MemberPage:
         
         #Add all details to database
     
+    #Function that gets the details of the selected member from the list box and database and returns them as a dictionary
     def get_selected_member(self):
-
-        #Gets the value of the selected list index
-        index = self.member_list.curselection()[0]
+        try:
+            #Gets the index of the selected list item
+            index = self.member_list.curselection()[0]
+            #Gets the names from the listbox at the selected index
+            names = self.member_list.get(index)
+        except IndexError:
+            names = " "
         
-        #Gets the names from the listbox at the selected index
-        names = self.member_list.get(index)
-
         #Splits the list value into first & last names
         first_name, last_name = names.split(" ", 1)
-
         #Creates a dictionary to store all details found about selected member
         selected_member = {
             "first_name" : first_name,
