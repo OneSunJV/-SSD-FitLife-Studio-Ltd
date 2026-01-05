@@ -17,7 +17,7 @@ class EquipmentMaintenancePage:
         self.init_table_section()
         self.init_form_section()
         
-    # Allow access to the frame
+    #Allow access to the frame
     def get_frame(self):
         return self.frame
 
