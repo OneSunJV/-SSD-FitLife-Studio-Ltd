@@ -3,27 +3,27 @@ from tkinter import ttk
 from tkinter.messagebox import showinfo, showerror
 
 
-class EquipmentMaintenancePage(ttk.Frame):
+class EquipmentMaintenancePage:
     def __init__(self, parent, controller=None):
-        super().__init__(parent)
+        self.frame = parent
         self.controller = controller
         
         # Configure grid
-        self.columnconfigure(0, weight=3)  # Table area
-        self.columnconfigure(1, weight=2)  # Form area
-        self.rowconfigure(0, weight=1)
+        self.frame.columnconfigure(0, weight=3)  # Table area
+        self.frame.columnconfigure(1, weight=2)  # Form area
+        self.frame.rowconfigure(0, weight=1)
 
         # Build UI
         self.init_table_section()
         self.init_form_section()
         
-    #Allow access to the frame
+    # Allow access to the frame
     def get_frame(self):
-        return self
+        return self.frame
 
     # ----------- Left side - Equipment Table ----------- #
     def init_table_section(self):
-        table_frame = ttk.Frame(self)
+        table_frame = ttk.Frame(self.frame)
         table_frame.grid(row=0, column=0, sticky='nsew', padx=10, pady=10)
 
         title_label = ttk.Label(
@@ -76,7 +76,7 @@ class EquipmentMaintenancePage(ttk.Frame):
 
     # ----------- Right side - Add/Edit Form ----------- #
     def init_form_section(self):
-        form_frame = ttk.Frame(self)
+        form_frame = ttk.Frame(self.frame)
         form_frame.grid(row=0, column=1, sticky='nsew', padx=(0, 10), pady=10)
 
         form_frame.columnconfigure(1, weight=1)
