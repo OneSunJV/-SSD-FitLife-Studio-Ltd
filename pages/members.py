@@ -22,9 +22,6 @@ class MemberPage:
         #Calls a function to define and configure a notebook and tabs for different member operations
         self.member_notebook = self.setup_notebook()
     
-
-
-
         #temporary subroutine to test with data
         self.add_data()
 
@@ -108,7 +105,7 @@ class MemberPage:
         add_member_tab = tk.Frame(member_notebook, background=self.bg_colour)
 
         #Passes frame into subroutine to configure widgets
-        self.setup_add_find_tab(add_member_tab, "add")
+        self.add_widgets(add_member_tab, "add")
 
         return add_member_tab
     
@@ -118,7 +115,7 @@ class MemberPage:
         find_member_tab = tk.Frame(member_notebook, name="find_member_tab", background=self.bg_colour)
 
         #Passes frame into subroutine to configure widgets
-        self.setup_add_find_tab(find_member_tab, "find")
+        self.add_widgets(find_member_tab, "find")
 
         #Ability to select from list and view all member details
         #Ability to filter by different member details (reuse from add new member tab?)
@@ -126,13 +123,13 @@ class MemberPage:
         return find_member_tab
     
 
-    def setup_add_find_tab(self, frame, tab_name):
+    def add_widgets(self, window, tab_name):
 
         #defines a ttk style used for all labels in this tab
-        add_member_font = ("Verdana", 15)
+        widget_font = ("Verdana", 15)
         label_style = ttk.Style()
         label_style.theme_use("clam")
-        label_style.configure("AddMember.TLabel", font=add_member_font, background=self.bg_colour)
+        label_style.configure("MemberWidget.TLabel", font=widget_font, background=self.bg_colour)
 
         #defines values for widget positioning
         x_position = 20
@@ -141,52 +138,52 @@ class MemberPage:
         y_gap = 40
 
         #First name label & entry
-        first_name_lbl = ttk.Label(frame, text="First Name", style="AddMember.TLabel")
+        first_name_lbl = ttk.Label(window, text="First Name", style="MemberWidget.TLabel")
         first_name_lbl.place(x = x_position, y = y_position)
-        first_name_txt = ttk.Entry(frame, name="first_name_txt", font=add_member_font)
+        first_name_txt = ttk.Entry(window, name="first_name_txt", font=widget_font)
         first_name_txt.place(x = x_position + x_gap, y = y_position)
 
         #Last name label & entry
-        last_name_lbl = ttk.Label(frame, text="Last Name", style="AddMember.TLabel")
+        last_name_lbl = ttk.Label(window, text="Last Name", style="MemberWidget.TLabel")
         last_name_lbl.place(x = x_position, y = y_position + (y_gap*1))
-        last_name_txt = ttk.Entry(frame, name="last_name_txt", font=add_member_font)
+        last_name_txt = ttk.Entry(window, name="last_name_txt", font=widget_font)
         last_name_txt.place(x = x_position + x_gap, y= y_position + (y_gap*1))
 
         #Date of birth label & datepicker
-        dob_lbl = ttk.Label(frame, text="Date of Birth", style="AddMember.TLabel")
+        dob_lbl = ttk.Label(window, text="Date of Birth", style="MemberWidget.TLabel")
         dob_lbl.place(x = x_position, y = y_position + (y_gap*2))
-        dob_dtp = DateEntry(frame, name="dob_dtp", font=add_member_font, date_pattern="dd-mm-yyyy", background="white", showweeknumbers=False)
+        dob_dtp = DateEntry(window, name="dob_dtp", font=widget_font, date_pattern="dd-mm-yyyy", background="white", showweeknumbers=False)
         dob_dtp.place(x = x_position + x_gap + 105, y= y_position + (y_gap*2))
 
         #Email address label & entry
-        email_lbl = ttk.Label(frame, text="Email", style="AddMember.TLabel")
+        email_lbl = ttk.Label(window, text="Email", style="MemberWidget.TLabel")
         email_lbl.place(x = x_position, y = y_position + (y_gap*3))
-        email_txt = ttk.Entry(frame, name="email_txt", font=add_member_font)
+        email_txt = ttk.Entry(window, name="email_txt", font=widget_font)
         email_txt.place(x = x_position + x_gap, y= y_position + (y_gap*3))
 
         #Phone number label & entry
-        phone_lbl = ttk.Label(frame, text="Phone number", style="AddMember.TLabel")
+        phone_lbl = ttk.Label(window, text="Phone number", style="MemberWidget.TLabel")
         phone_lbl.place(x = x_position, y = y_position + (y_gap*4))
-        phone_txt = ttk.Entry(frame, name="phone_txt", font=add_member_font)
+        phone_txt = ttk.Entry(window, name="phone_txt", font=widget_font)
         phone_txt.place(x = x_position + x_gap, y= y_position + (y_gap*4))
 
         #Membership type label & drop-down
-        membership_lbl = ttk.Label(frame, text="Membership", style="AddMember.TLabel")
+        membership_lbl = ttk.Label(window, text="Membership", style="MemberWidget.TLabel")
         membership_lbl.place(x = x_position, y = y_position + (y_gap*5))
-        membership_cmb = ttk.Combobox(frame, name="membership_cmb", font=add_member_font)
+        membership_cmb = ttk.Combobox(window, name="membership_cmb", font=widget_font)
         membership_cmb.place(x = x_position + x_gap, y= y_position + (y_gap*5))
 
         #Next payment date label and datepicker
-        next_payment_date_lbl = ttk.Label(frame, text="Next Payment Date", style="AddMember.TLabel")
+        next_payment_date_lbl = ttk.Label(window, text="Next Payment Date", style="MemberWidget.TLabel")
         next_payment_date_lbl.place(x = x_position, y = y_position + (y_gap*6))
-        next_payment_date_dtp = DateEntry(frame, name="next_payment_date_dtp", font=add_member_font, date_pattern="dd-mm-yyyy", background="white", showweeknumbers=False)
+        next_payment_date_dtp = DateEntry(window, name="next_payment_date_dtp", font=widget_font, date_pattern="dd-mm-yyyy", background="white", showweeknumbers=False)
         next_payment_date_dtp.place(x = x_position + x_gap + 105, y= y_position + (y_gap*6))
 
-        #Selection statement to configure tab depending on if for the Add Member or Find Member tab - setup_add_find_tab() used commonly for both
+        #Selection statement to configure tab depending on if for the Add Member or Find Member tab - add_widgets() used commonly for both
         if tab_name == "add":
             #Button to save the details input in the above entries
-            add_btn = tk.Button(frame, name="add_btn", text="Add", font=self.button_font, command=lambda: self.add_member(
-                self.first_name_txt.get(), 
+            add_btn = tk.Button(window, name="add_btn", text="Add", font=self.button_font, command=lambda: self.add_member(
+                first_name_txt.get(), 
                 last_name_txt.get(), 
                 dob_dtp.get_date(),
                 email_txt.get(),
@@ -195,6 +192,20 @@ class MemberPage:
                 next_payment_date_dtp.get_date()))
         
             add_btn.place(x=120, y=400)
+        
+        elif tab_name == "edit":
+            #Save button
+            save_btn = tk.Button(window, name="save_btn", text="Save", font=self.button_font, command=lambda: self.save_member_details(
+            window,
+            first_name_txt.get(), 
+            last_name_txt.get(), 
+            dob_dtp.get_date(),
+            email_txt.get(),
+            phone_txt.get(), 
+            membership_cmb.get(),
+            next_payment_date_dtp.get_date()
+            ))
+            save_btn.place(x=120, y=400)
         
         elif tab_name == "find":
             #sets all widgets to be readonly and disables date pickers and combo box in the Find Member tab
@@ -206,8 +217,28 @@ class MemberPage:
             membership_cmb.state(["disabled"])
             next_payment_date_dtp.state(["disabled"])
 
-            filter_btn = tk.Button(frame, name="filter_btn", text="Filter", font=self.button_font, command=self.filter_list) #needs command
+            filter_btn = tk.Button(window, name="filter_btn", text="Filter", font=self.button_font, command=self.setup_filter_window)
             filter_btn.place(x=100, y=400)
+        
+        elif tab_name == "filter":
+            #Apply button
+            apply_btn = tk.Button(window, name="apply_btn", text="Apply", font=self.button_font, command=lambda: self.apply_filter(
+            window,
+            first_name_txt.get(), 
+            last_name_txt.get(), 
+            dob_dtp.get_date(),
+            email_txt.get(),
+            phone_txt.get(), 
+            membership_cmb.get(),
+            next_payment_date_dtp.get_date()
+            ))
+            apply_btn.place(x=120, y=400)
+
+        #Adds a cancel button to both edit and filter pages
+        if tab_name == "edit" or "filter":
+            #Cancel button
+            cancel_btn = tk.Button(window, name="cancel_btn", text="Cancel", font=self.button_font, command=window.destroy)
+            cancel_btn.place(x=250, y=400)
     
     #Subroutine that allows the user to edit an existing member picked from the listbox
     def edit_member(self):
@@ -219,6 +250,22 @@ class MemberPage:
             #displays a warning message if no member is selected
             messagebox.showwarning(title = "No Member Selected", message = "There is no member selected to edit.")
             member_selected = False
+
+        if member_selected:
+            #calls a function to get all member details of the selected member
+            member = self.get_selected_member()
+
+            #calls a subroutine to set up a new window for the user to edit member details
+            self.setup_edit_window()
+
+    #subroutine to create and display a window for the user to edit the currently selected member
+    def setup_edit_window(self):
+        edit_win = tk.Tk()
+        edit_win.geometry("500x500")
+        edit_win.title("Edit Member")
+        edit_win.config(bg=self.bg_colour)
+        #adds the necessary widgets to the window
+        self.add_widgets(edit_win, "edit")
 
     #Subroutine that allows the user to delete an existing member picked from the listbox
     def delete_member(self):
@@ -248,15 +295,13 @@ class MemberPage:
         
         #Add all details to database
     
-    def get_selected_member(self, event):
-        listbox = event.widget
+    def get_selected_member(self):
+
         #Gets the value of the selected list index
-        selected_index = listbox.curselection()
-        if not selected_index:
-            return #nothing to return as nothing selected
+        index = self.member_list.curselection()[0]
         
         #Gets the names from the listbox at the selected index
-        names = self.member_list.get(selected_index[0])
+        names = self.member_list.get(index)
 
         #Splits the list value into first & last names
         first_name, last_name = names.split(" ", 1)
@@ -287,7 +332,7 @@ class MemberPage:
     #Main subroutine that deals with inserting values of a selected list item into relevant widgets
     def populate_member_details(self, event):
         #Calls a function to get the details of the selected member
-        selected_member = self.get_selected_member(event)
+        selected_member = self.get_selected_member()
 
         #Checks if member has been selected
         if selected_member:
@@ -295,8 +340,22 @@ class MemberPage:
             self.set_widget_value(self.member_notebook.children["find_member_tab"].children["first_name_txt"], selected_member["first_name"])
             self.set_widget_value(self.member_notebook.children["find_member_tab"].children["last_name_txt"], selected_member["last_name"])
 
-    def filter_list(self):
-        print(self.member_notebook.children["find_member_tab"].children["first_name_txt"].get())
+    #Subroutine to create, configure and display a window where the user can input data to filter by
+    def setup_filter_window(self):
+        filter_win = tk.Tk()
+        filter_win.geometry("500x500")
+        filter_win.title("Filter")
+        filter_win.config(bg=self.bg_colour)
+
+        self.add_widgets(filter_win, "filter")
+
+        filter_win.mainloop()
+    
+    #Subroutine to apply the filters input by the user - called by pressing Apply button
+    def apply_filter(self, filter_win, first_name, last_name, dob, email, phone, membership, next_payment_date):
+        self.member_list.delete(0, tk.END)
+        #needs code adding to check database and only display matching records
+        filter_win.destroy()
 
     def add_data(self):
         self.member_list.insert(tk.END, "Thomas Creasey")
