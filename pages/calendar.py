@@ -2,10 +2,13 @@ import tkinter as tk
 from tkinter import ttk
 from calendar import monthrange, month_name
 from datetime import datetime
+from functools import partial
 
 
 DAYS_IN_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 DISABLED_TEXT_COLOUR = "#ababab"
+MAX_WINDOW_HEIGHT = 720
+WINDOW_WIDTH = 600
 
 class Event:
     def __init__(self, title):
@@ -102,7 +105,7 @@ class CalendarPage:
             dates_in_range.append({"month": next_month, "day": i+1}) # We can never go over by more than 7 so we don't have to worry about how many days are in the month.
 
         # ToDo query database using dates_in_range to get the events for the given dates
-        calendar_days: list[DateInfo] = list(map(lambda d: DateInfo(d['day'], d['month'], [Event("Example Event 1"), Event("Example Event 2"), Event("Example Event 3")]), dates_in_range))
+        calendar_days: list[DateInfo] = list(map(lambda d: DateInfo(d['day'], d['month'], [Event("Example Event 1"), Event("Example Event 2"), Event("Example Event 3"), Event("Example Event 4"), Event("Example Event 5")]), dates_in_range))
 
         row_offset = 1 # First row is used to display day of week
 
@@ -125,10 +128,18 @@ class CalendarPage:
                 label = ttk.Label(frame, text=date.day, foreground=label_foreground)
                 frame.grid(row=row+row_offset, column=column, sticky=tk.NSEW)
                 label.grid(row=0, column=0, sticky=tk.NW)
-                for idx, event in enumerate(date.events):
-                    button = ttk.Button(frame, text=event.title)
-                    button.grid(row=idx+1, column=0, sticky=tk.EW)
 
+                frame.bind("<Button-1>", partial(self.open_date_overview, date))
+                label.bind("<Button-1>", partial(self.open_date_overview, date))
+
+                for idx, event in enumerate(date.events):
+                    if idx == 2 and len(date.events) > 3:
+                        button = ttk.Button(frame, text=f"+ {len(date.events) - 2} more", command=partial(self.open_date_overview, date))
+                        button.grid(row=idx + 1, column=0, sticky=tk.EW)
+                        break
+                    else:
+                        button = ttk.Button(frame, text=event.title, command=partial(self.open_event_view, event))
+                        button.grid(row=idx + 1, column=0, sticky=tk.EW)
     @staticmethod
     def month_to_string(month_integer: int):
         return month_name[month_integer]
@@ -173,3 +184,47 @@ class CalendarPage:
 
             self.update_date_string()
             self.update_days_view()
+
+    def open_date_overview(self, date: DateInfo, _event=None):
+        root = self.frame.winfo_toplevel()
+
+        top = tk.Toplevel(root)
+        top.resizable(False, False)
+        top.title("Date Overview")
+        top.columnconfigure(0, weight=1)
+        top.rowconfigure(0, weight=1)
+
+        canvas = tk.Canvas(top)
+        scrollbar = ttk.Scrollbar(top, orient="vertical", command=canvas.yview)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.grid(row=0, column=00, sticky="nsew")
+        scrollbar.grid(row=0, column=1, sticky="ns")
+
+        def on_canvas_configure(event):
+            canvas.itemconfigure(window_id, width=event.width)
+
+        canvas.bind("<Configure>", on_canvas_configure)
+
+        content = ttk.Frame(canvas)
+        window_id = canvas.create_window(0, 0, window=content, anchor="nw")
+        content.columnconfigure(0, weight=1)
+        content.rowconfigure(0, weight=1)
+        label = ttk.Label(content, text="Date Overview")
+        label.grid(row=0, column=0, sticky=tk.NSEW)
+
+        def resize():
+            content.update_idletasks()
+            height = min(content.winfo_reqheight(), MAX_WINDOW_HEIGHT)
+            top.geometry(f"{WINDOW_WIDTH}x{height}")
+            canvas.configure(scrollregion=canvas.bbox("all"))
+
+        content.bind("<Configure>", lambda e: content.after_idle(resize))
+
+        for idx, event in enumerate(date.events):
+            button = ttk.Button(content, text=f"{event.title}", command=partial(self.open_event_view, event))
+            button.grid(row=idx + 1, column=0, sticky=tk.EW)
+
+        print(f"FRAME CLICKED: {date.day}/{date.month}")
+
+    def open_event_view(self, event: Event):
+        print(f"EVENT CLICKED: {event.title}")
