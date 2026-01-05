@@ -235,7 +235,7 @@ class MemberPage:
             apply_btn.place(x=120, y=400)
 
         #Adds a cancel button to both edit and filter pages
-        if tab_name == "edit" or "filter":
+        if (tab_name == "edit") or (tab_name == "filter"):
             #Cancel button
             cancel_btn = tk.Button(window, name="cancel_btn", text="Cancel", font=self.button_font, command=window.destroy)
             cancel_btn.place(x=250, y=400)
