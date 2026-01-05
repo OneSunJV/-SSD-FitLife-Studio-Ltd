@@ -70,10 +70,16 @@ class SystemLayout:
 
     # ---------------- Page Container ---------------- #
     def init_page_container(self):
-        self.page_container = tk.Frame(self.root, bg="blue", width=1000, height=660)
-        self.page_container.grid(row=1, column=1, sticky=tk.NSEW)
+        self.page_container = tk.Frame(self.root, bg="#FFFFFF")
+    
+        self.page_container.grid(row=1, column=1, sticky="nsew")
+
+ 
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_columnconfigure(1, weight=1)
 
     def get_page_container(self):
-        return self.page_container;
+        return self.page_container
+        
 
 # Contain all common layout bits (navigation / header)
