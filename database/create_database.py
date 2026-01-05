@@ -68,7 +68,7 @@ connection.execute('''CREATE TABLE IF NOT EXISTS Members (
                         LastName TEXT NOT NULL,
                         DateOfBirth DATE NOT NULL,
                         EmailAddress TEXT NOT NULL,
-                        PhoneNumber INTEGER NOT NULL,
+                        PhoneNumber TEXT NOT NULL,
                         MembershipType INTEGER,
                         NextPaymentDate DATE,
                         FOREIGN KEY (MembershipType) REFERENCES MembershipTypes (MembershipType)

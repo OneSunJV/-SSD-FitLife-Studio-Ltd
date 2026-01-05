@@ -1,4 +1,5 @@
 import tkinter as tk
+import sqlite3
 from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
 from datetime import datetime
@@ -192,13 +193,13 @@ class MemberPage:
         if tab_name == "add":
             #Button to save the details input in the above entries
             add_btn = tk.Button(window, name="add_btn", text="Add", font=self.button_font, command=lambda: self.add_member(
-                first_name_txt.get(), 
-                last_name_txt.get(), 
-                dob_dtp.get_date(),
-                email_txt.get(),
-                phone_txt.get(), 
-                membership_cmb.get(),
-                next_payment_date_dtp.get_date()))
+                first_name_txt, 
+                last_name_txt, 
+                dob_dtp,
+                email_txt,
+                phone_txt, 
+                membership_cmb,
+                next_payment_date_dtp))
         
             add_btn.place(x=120, y=400)
         
@@ -298,13 +299,49 @@ class MemberPage:
                 self.member_list.delete(index)
 
     #Subroutine to append the details entered in the Add New Member tab to the member database & listbox
-    def add_member(self, first_name, last_name, dob, email, phone, membership_type, next_payment_date):
-        
-        #Check for duplicates
+    def add_member(self, first_name_txt, last_name_txt, dob_dtp, email_txt, phone_txt, membership_cmb, next_payment_date_dtp):
+        #Gets the data input from each of the widgets
+        first_name = first_name_txt.get()
+        last_name = last_name_txt.get()
+        dob = str(dob_dtp.get_date())
+        email = email_txt.get()
+        phone = phone_txt.get()
+        membership_type = membership_cmb.get()
+        next_payment_date = str(next_payment_date_dtp.get_date())
 
-        self.member_list.insert(tk.END, f"{first_name} {last_name}")
+        #Converts the date picker outputs into SQL date formats - THIS DOES NOT WORK
+        python_date = datetime.strptime(dob, "%Y-%m-%d").date()
+        sql_dob = python_date.strftime("%Y-%m-%d")
+
+        python_date = datetime.strptime(next_payment_date, "%Y-%m-%d").date()
+        sql_next_payment_date = python_date.strftime("%Y-%m-%d")
+
+        #self.member_list.insert(tk.END, f"{first_name} {last_name}")
         
         #Add all details to database
+        #Connects to database
+        connection = sqlite3.connect("SystemDatabase.db")
+        #Defines cursor
+        cursor = connection.cursor()
+        #Inserts the values input into the database
+        cursor.execute(f'''
+            INSERT INTO Members(FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, MembershipType, NextPaymentDate)
+            VALUES ("{first_name}", "{last_name}", {sql_dob}, "{email}", "{phone}", {membership_type}, {sql_next_payment_date});
+                       ''')
+        connection.commit()
+        connection.close()
+
+        #Displays an info message to confirm the member has been added to the database
+        messagebox.showinfo(title="Member Added", message= f"{first_name} {last_name} added successfully.")
+
+        #Clears the contents of each of the Add Member widgets
+        first_name_txt.delete(0, tk.END)
+        last_name_txt.delete(0, tk.END)
+        dob_dtp.delete(0, tk.END)
+        email_txt.delete(0, tk.END)
+        phone_txt.delete(0, tk.END)
+        membership_cmb.delete(0, tk.END)
+        next_payment_date_dtp.delete(0, tk.END)
     
     #Function that gets the details of the selected member from the list box and database and returns them as a dictionary
     def get_selected_member(self):
@@ -314,12 +351,29 @@ class MemberPage:
             #Gets the names from the listbox at the selected index
             names = self.member_list.get(index)
         except IndexError:
-            names = " "
+            item = " "
         
         #Splits the list value into first & last names
-        first_name, last_name = names.split(" ", 1)
+        id = item.split(" ", 1)[0]
+
+        if id != "":
+            #Connects to database
+            connection = sqlite3.connect("SystemDatabase.db")
+            #Defines cursor
+            cursor = connection.cursor()
+            cursor.execute(f'''
+                SELECT * FROM Members
+                WHERE MemberID = {id};''')
+            data = cursor.fetchall()
+            print(data)
+            cursor.close()
+        else:
+            first_name = ""
+            last_name = ""
+
         #Creates a dictionary to store all details found about selected member
         selected_member = {
+            "id" : id,
             "first_name" : first_name,
             "last_name" : last_name
             #All other member details
@@ -370,11 +424,13 @@ class MemberPage:
         filter_win.destroy()
 
     def add_data(self):
-        self.member_list.insert(tk.END, "Thomas Creasey")
-        self.member_list.insert(tk.END, "Jaison Varghese")
-        self.member_list.insert(tk.END, "Hanif Uddin")
-        self.member_list.insert(tk.END, "Jonathan Trivett")
-        self.member_list.insert(tk.END, "Alex Legg")
+        self.member_list.insert(tk.END, "1  Thomas Creasey")
+        self.member_list.insert(tk.END, "2  Jaison Varghese")
+        self.member_list.insert(tk.END, "3  Hanif Uddin")
+        self.member_list.insert(tk.END, "4  Jonathan Trivett")
+        self.member_list.insert(tk.END, "5  Alex Legg")
+
+
 
 
 
