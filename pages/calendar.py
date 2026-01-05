@@ -129,16 +129,16 @@ class CalendarPage:
                 frame.grid(row=row+row_offset, column=column, sticky=tk.NSEW)
                 label.grid(row=0, column=0, sticky=tk.NW)
 
-                frame.bind("<Button-1>", partial(self.open_date_overview, date))
-                label.bind("<Button-1>", partial(self.open_date_overview, date))
+                frame.bind("<Button-1>", partial(self.open_date_overview, date, None))
+                label.bind("<Button-1>", partial(self.open_date_overview, date, None))
 
                 for idx, event in enumerate(date.events):
                     if idx == 2 and len(date.events) > 3:
-                        button = ttk.Button(frame, text=f"+ {len(date.events) - 2} more", command=partial(self.open_date_overview, date))
+                        button = ttk.Button(frame, text=f"+ {len(date.events) - 2} more", command=partial(self.open_date_overview, date, None))
                         button.grid(row=idx + 1, column=0, sticky=tk.EW)
                         break
                     else:
-                        button = ttk.Button(frame, text=event.title, command=partial(self.open_event_view, event))
+                        button = ttk.Button(frame, text=event.title, command=partial(self.open_date_overview, date, event))
                         button.grid(row=idx + 1, column=0, sticky=tk.EW)
     @staticmethod
     def month_to_string(month_integer: int):
@@ -185,7 +185,9 @@ class CalendarPage:
             self.update_date_string()
             self.update_days_view()
 
-    def open_date_overview(self, date: DateInfo, _event=None):
+    def open_date_overview(self, date: DateInfo, selected_event: Event=None, _event=None):
+        print(f"Selected event: {selected_event}")
+
         root = self.frame.winfo_toplevel()
 
         top = tk.Toplevel(root)
@@ -194,37 +196,42 @@ class CalendarPage:
         top.columnconfigure(0, weight=1)
         top.rowconfigure(0, weight=1)
 
-        canvas = tk.Canvas(top)
-        scrollbar = ttk.Scrollbar(top, orient="vertical", command=canvas.yview)
-        canvas.configure(yscrollcommand=scrollbar.set)
-        canvas.grid(row=0, column=00, sticky="nsew")
+        frame = ttk.Frame(top)
+        frame.grid(row=0, column=0, sticky=tk.NSEW)
+        frame.columnconfigure(0, weight=1)
+        frame.rowconfigure(0, weight=1)
+
+        columns = ("event")
+        tree = ttk.Treeview(frame, columns=columns, show="headings")
+        tree.heading("event", text="Event")
+        tree.grid(row=0, column=0, sticky=tk.NSEW)
+
+        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scrollbar.set)
         scrollbar.grid(row=0, column=1, sticky="ns")
 
-        def on_canvas_configure(event):
-            canvas.itemconfigure(window_id, width=event.width)
+        for event in date.events:
+            values = (f"{event.title}",)
+            print(values)
+            tree.insert("", "end", values=values)
 
-        canvas.bind("<Configure>", on_canvas_configure)
-
-        content = ttk.Frame(canvas)
-        window_id = canvas.create_window(0, 0, window=content, anchor="nw")
-        content.columnconfigure(0, weight=1)
-        content.rowconfigure(0, weight=1)
-        label = ttk.Label(content, text="Date Overview")
-        label.grid(row=0, column=0, sticky=tk.NSEW)
+        if selected_event is not None:
+            idx = date.events.index(selected_event)
+            selected_row = tree.get_children()[idx]
+            tree.selection_set(selected_row)
 
         def resize():
-            content.update_idletasks()
-            height = min(content.winfo_reqheight(), MAX_WINDOW_HEIGHT)
+            tree.update_idletasks()
+            req_height = tree.winfo_reqheight()
+            # Clamp height to the maximum window height
+            height = min(req_height, MAX_WINDOW_HEIGHT)
             top.geometry(f"{WINDOW_WIDTH}x{height}")
-            canvas.configure(scrollregion=canvas.bbox("all"))
+            # Show scrollbar only if needed
+            if req_height > MAX_WINDOW_HEIGHT:
+                scrollbar.grid()
+            else:
+                scrollbar.grid_remove()
 
-        content.bind("<Configure>", lambda e: content.after_idle(resize))
-
-        for idx, event in enumerate(date.events):
-            button = ttk.Button(content, text=f"{event.title}", command=partial(self.open_event_view, event))
-            button.grid(row=idx + 1, column=0, sticky=tk.EW)
+        tree.bind("<Configure>", lambda e: tree.after_idle(resize))
 
         print(f"FRAME CLICKED: {date.day}/{date.month}")
-
-    def open_event_view(self, event: Event):
-        print(f"EVENT CLICKED: {event.title}")
