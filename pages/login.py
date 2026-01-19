@@ -1,5 +1,4 @@
 import tkinter as tk
-import tkinter.font as tkFont
 from tkinter import ttk
 
 import bcrypt
@@ -7,6 +6,7 @@ from PIL import Image, ImageTk
 from tkinter.messagebox import showerror, showinfo
 from layouts.system_layout import SystemLayout
 import sqlite3
+from session import session
 
 ERAS_BOLD_FONT = ("Eras Bold ITC", 13, "bold")
 
@@ -97,7 +97,7 @@ def validate_login_credentials(root, username, password):
     connection = sqlite3.connect('SystemDatabase.db')
     cursor = connection.cursor()
 
-    cursor.execute('SELECT PasswordHash, FirstName, LastName FROM Employees WHERE username = ?', (username,))
+    cursor.execute('SELECT PasswordHash, FirstName, LastName, EmployeeID FROM Employees WHERE username = ?', (username,))
 
     row = cursor.fetchone()
 
@@ -107,6 +107,7 @@ def validate_login_credentials(root, username, password):
         showerror(title = "Login Failed!", message = "Fail! An account with these credentials does not exist in our system! If you believe this is a mistake, please contact your organisation's administrator(s) or our IT Service Desk.")
     else:
         display_name = f"{row[1]} {row[2]}"
+        session.set(row[3])
         showinfo(title="Login Successful!",
                  message=f"Success! The login details you have entered are valid. Welcome {display_name} to SportsDev!")
         root.destroy()  # Destroy the login window
