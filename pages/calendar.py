@@ -241,8 +241,6 @@ class CalendarPage:
 
         tree.bind("<Configure>", lambda e: tree.after_idle(resize))
 
-        print(f"FRAME CLICKED: {date.day}/{date.month}")
-
 def get_events_for_dates(dates) -> list[DateInfo]:
     dates_with_events: list[DateInfo] = []
 
@@ -254,7 +252,7 @@ def get_events_for_dates(dates) -> list[DateInfo]:
         month = date["month"]
         year = date["year"]
 
-        date_str = f"{year}-{month:02}-{day:02}"
+        date_str = f"{year}-{month:02}-{day:02}" # Pad month and day to two characters
         cursor.execute(f'''SELECT 
                                 Classes.ClassType, Sessions.SessionStartTime, Sessions.SessionFinishTime
                            FROM Sessions 
