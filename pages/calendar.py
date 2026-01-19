@@ -13,8 +13,10 @@ WINDOW_WIDTH = 600
 USER_ID = 1 # In the full app this would come from the user's authentication session.
 
 class Event:
-    def __init__(self, title):
+    def __init__(self, title, start, finish):
         self.title = title
+        self.start = start
+        self.finish = finish
 
 class DateInfo:
     def __init__(self, day, month, events: list[Event]):
@@ -187,8 +189,6 @@ class CalendarPage:
             self.update_days_view()
 
     def open_date_overview(self, date: DateInfo, selected_event: Event=None, _event=None):
-        print(f"Selected event: {selected_event}")
-
         root = self.frame.winfo_toplevel()
 
         top = tk.Toplevel(root)
@@ -202,9 +202,11 @@ class CalendarPage:
         frame.columnconfigure(0, weight=1)
         frame.rowconfigure(0, weight=1)
 
-        columns = ("event")
+        columns = ("event", "start", "end")
         tree = ttk.Treeview(frame, columns=columns, show="headings")
         tree.heading("event", text="Event")
+        tree.heading("start", text="Starts At")
+        tree.heading("end", text="Ends At")
         tree.grid(row=0, column=0, sticky=tk.NSEW)
 
         scrollbar = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
@@ -212,8 +214,12 @@ class CalendarPage:
         scrollbar.grid(row=0, column=1, sticky="ns")
 
         for event in date.events:
-            values = (f"{event.title}",)
-            print(values)
+            start_time = datetime.fromtimestamp(event.start).time()
+            start_time_str = f"{start_time.hour:02}:{start_time.minute:02}"
+            end_time = datetime.fromtimestamp(event.finish).time()
+            end_time_str = f"{end_time.hour:02}:{end_time.minute:02}"
+
+            values = (event.title, start_time_str, end_time_str)
             tree.insert("", "end", values=values)
 
         if selected_event is not None:
@@ -250,17 +256,18 @@ def get_events_for_dates(dates) -> list[DateInfo]:
 
         date_str = f"{year}-{month:02}-{day:02}"
         cursor.execute(f'''SELECT 
-                                Classes.ClassType, Sessions.SessionStartTime 
+                                Classes.ClassType, Sessions.SessionStartTime, Sessions.SessionFinishTime
                            FROM Sessions 
                            INNER JOIN Classes 
                                 ON Sessions.ClassID = Classes.ClassID
                            WHERE 
                                 Sessions.TrainerID == {USER_ID} 
-                                AND SessionDate == '{date_str}';''')
+                                AND SessionDate == '{date_str}'
+                           ORDER BY Sessions.SessionStartTime;''')
 
         rows = cursor.fetchall()
 
-        dates_with_events.append(DateInfo(day, month, list(map(lambda r: Event(r[0]), rows))))
+        dates_with_events.append(DateInfo(day, month, list(map(lambda r: Event(r[0], r[1], r[2]), rows))))
 
 
     connection.close()
