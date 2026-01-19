@@ -101,6 +101,8 @@ def validate_login_credentials(root, username, password):
 
     row = cursor.fetchone()
 
+    connection.close()
+
     if row is None or not bcrypt.checkpw(password.encode('utf-8'), row[0]):
         showerror(title = "Login Failed!", message = "Fail! An account with these credentials does not exist in our system! If you believe this is a mistake, please contact your organisation's administrator(s) or our IT Service Desk.")
     else:
