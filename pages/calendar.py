@@ -244,7 +244,7 @@ class CalendarPage:
 def get_events_for_dates(dates) -> list[DateInfo]:
     dates_with_events: list[DateInfo] = []
 
-    connection = sqlite3.connect("database/SystemDatabase.db")
+    connection = sqlite3.connect("SystemDatabase.db")
     cursor = connection.cursor()
 
     for date in dates:
