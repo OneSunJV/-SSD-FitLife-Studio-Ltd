@@ -4,13 +4,12 @@ from calendar import monthrange, month_name
 from datetime import datetime
 from functools import partial
 import sqlite3
+from session import session
 
 DAYS_IN_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 DISABLED_TEXT_COLOUR = "#ababab"
 MAX_WINDOW_HEIGHT = 720
 WINDOW_WIDTH = 600
-
-USER_ID = 1 # In the full app this would come from the user's authentication session.
 
 class Event:
     def __init__(self, title, start, finish):
@@ -243,6 +242,7 @@ class CalendarPage:
 
 def get_events_for_dates(dates) -> list[DateInfo]:
     dates_with_events: list[DateInfo] = []
+    user_id = session.user_id
 
     connection = sqlite3.connect("SystemDatabase.db")
     cursor = connection.cursor()
@@ -259,7 +259,7 @@ def get_events_for_dates(dates) -> list[DateInfo]:
                            INNER JOIN Classes 
                                 ON Sessions.ClassID = Classes.ClassID
                            WHERE 
-                                Sessions.TrainerID == {USER_ID} 
+                                Sessions.TrainerID == {user_id} 
                                 AND SessionDate == '{date_str}'
                            ORDER BY Sessions.SessionStartTime;''')
 
