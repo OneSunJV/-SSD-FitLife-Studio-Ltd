@@ -45,9 +45,9 @@ connection.execute('''CREATE TABLE IF NOT EXISTS Sessions (
                         SessionID INTEGER PRIMARY KEY AUTOINCREMENT,
                         ClassID INTEGER,
                         TrainerID INTEGER,
-                        SessionStartTime DATE,
-                        SessionFinishTime DATE,
                         SessionDate DATE,
+                        SessionStartTime DATE,
+                        SessionFinishTime DATE,                   
                         FOREIGN KEY (ClassID) REFERENCES Classes (ClassID),
                         FOREIGN KEY (TrainerID) REFERENCES Employees (EmployeeID)
                    );''')
