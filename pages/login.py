@@ -1,8 +1,12 @@
 import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import ttk
+
+import bcrypt
 from PIL import Image, ImageTk
-from controllers.login_backend import validate_login_credentials
+from tkinter.messagebox import showerror, showinfo
+from layouts.system_layout import SystemLayout
+import sqlite3
 
 class LoginUI(ttk.Frame):
     def __init__(self, root):
@@ -87,3 +91,21 @@ class LoginUI(ttk.Frame):
     def setup_button(self):
         self.login_button = ttk.Button(self.login_box, text = 'Login', command = lambda: validate_login_credentials(self.root, self.username_data.get(), self.password_data.get()))
         self.login_button.grid(column = 0, row = 7, ipadx = 50, ipady = 20, padx = 10, pady = 15)
+
+
+def validate_login_credentials(root, username, password):
+    connection = sqlite3.connect('SystemDatabase.db')
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT PasswordHash, FirstName, LastName FROM Employees WHERE username = ?', (username,))
+
+    row = cursor.fetchone()
+
+    if row is None or not bcrypt.checkpw(password.encode('utf-8'), row[0]):
+        showerror(title = "Login Failed!", message = "Fail! An account with these credentials does not exist in our system! If you believe this is a mistake, please contact your organisation's administrator(s) or our IT Service Desk.")
+    else:
+        display_name = f"{row[1]} {row[2]}"
+        showinfo(title="Login Successful!",
+                 message=f"Success! The login details you have entered are valid. Welcome {display_name} to SportsDev!")
+        root.destroy()  # Destroy the login window
+        SystemLayout()

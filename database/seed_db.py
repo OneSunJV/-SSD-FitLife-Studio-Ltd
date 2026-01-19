@@ -1,15 +1,17 @@
 import random
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 from calendar import monthrange
+import bcrypt
 
 connection = sqlite3.connect('SystemDatabase.db')
 cursor_object = connection.cursor()
 
+password_hash = bcrypt.hashpw("12345".encode('utf-8'), bcrypt.gensalt())
 connection.execute('''INSERT INTO Employees 
-                        (EmployeeID, FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, JoinDate, EmployeeType)  
+                        (EmployeeID, Username, PasswordHash, FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, JoinDate, EmployeeType)  
                       VALUES 
-                        (1, 'Thomas', 'Creasey', '2000-01-01', 'thomas@gmail.com', '07000000000', '2026-01-19', 'ADMIN');''')
+                        (1, 'JohnDoe', ?, 'John', 'Doe', '2000-01-01', 'john@gmail.com', '07000000000', '2026-01-19', 'ADMIN');''', (password_hash,))
 
 connection.execute('''INSERT INTO Classes 
                    (ClassID, ClassType, ClassDescription)  
