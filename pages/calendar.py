@@ -3,12 +3,14 @@ from tkinter import ttk
 from calendar import monthrange, month_name
 from datetime import datetime
 from functools import partial
-
+import sqlite3
 
 DAYS_IN_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 DISABLED_TEXT_COLOUR = "#ababab"
 MAX_WINDOW_HEIGHT = 720
 WINDOW_WIDTH = 600
+
+USER_ID = 1 # In the full app this would come from the user's authentication session.
 
 class Event:
     def __init__(self, title):
@@ -95,17 +97,16 @@ class CalendarPage:
             _, days_in_prev_month = monthrange(prev_months_year, prev_month)
 
             for i in range(days_in_prev_month-first_day_offset, days_in_prev_month):
-                dates_in_range.append({"month": prev_month, "day": i})
+                dates_in_range.append({"year": prev_months_year, "month": prev_month, "day": i})
 
         for i in range(days_in_month):
-            dates_in_range.append({"month": self.selectedMonth, "day": i+1})
+            dates_in_range.append({"year": self.selectedYear, "month": self.selectedMonth, "day": i+1})
 
         for i in range(6*7 - len(dates_in_range)): # Fill the remaining values with the next month (there are 6 rows * 7 columns)
-            next_month, _next_months_year = self.get_next_month(self.selectedMonth)
-            dates_in_range.append({"month": next_month, "day": i+1}) # We can never go over by more than 7 so we don't have to worry about how many days are in the month.
+            next_month, next_months_year = self.get_next_month(self.selectedMonth)
+            dates_in_range.append({"year": next_months_year, "month": next_month, "day": i+1}) # We can never go over by more than 7 so we don't have to worry about how many days are in the month.
 
-        # ToDo query database using dates_in_range to get the events for the given dates
-        calendar_days: list[DateInfo] = list(map(lambda d: DateInfo(d['day'], d['month'], [Event("Example Event 1"), Event("Example Event 2"), Event("Example Event 3"), Event("Example Event 4"), Event("Example Event 5")]), dates_in_range))
+        calendar_days: list[DateInfo] = get_events_for_dates(dates_in_range)
 
         row_offset = 1 # First row is used to display day of week
 
@@ -235,3 +236,34 @@ class CalendarPage:
         tree.bind("<Configure>", lambda e: tree.after_idle(resize))
 
         print(f"FRAME CLICKED: {date.day}/{date.month}")
+
+def get_events_for_dates(dates) -> list[DateInfo]:
+    dates_with_events: list[DateInfo] = []
+
+    connection = sqlite3.connect("database/SystemDatabase.db")
+    cursor = connection.cursor()
+
+    for date in dates:
+        day = date["day"]
+        month = date["month"]
+        year = date["year"]
+
+        date_str = f"{year}-{month:02}-{day:02}"
+        cursor.execute(f'''SELECT 
+                                Classes.ClassType, Sessions.SessionStartTime 
+                           FROM Sessions 
+                           INNER JOIN Classes 
+                                ON Sessions.ClassID = Classes.ClassID
+                           WHERE 
+                                Sessions.TrainerID == {USER_ID} 
+                                AND SessionDate == '{date_str}';''')
+
+        rows = cursor.fetchall()
+
+        dates_with_events.append(DateInfo(day, month, list(map(lambda r: Event(r[0]), rows))))
+
+
+    connection.close()
+
+    return dates_with_events
+
