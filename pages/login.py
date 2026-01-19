@@ -8,12 +8,17 @@ from tkinter.messagebox import showerror, showinfo
 from layouts.system_layout import SystemLayout
 import sqlite3
 
+ERAS_BOLD_FONT = ("Eras Bold ITC", 13, "bold")
+
 class LoginUI(ttk.Frame):
     def __init__(self, root):
         super().__init__(width=1280, height=720)
         self.grid_propagate(True)
 
         self.root = root
+
+        self.password_data = None
+        self.username_data = None
 
         self.columnconfigure(0, weight = 1)
         self.columnconfigure(1, weight = 1)
@@ -26,17 +31,16 @@ class LoginUI(ttk.Frame):
         self.init_bg()
         self.init_login_frame()
         self.setup_images()
-        self.setup_fonts()
         self.setup_labels()
         self.setup_entries()
         self.setup_button()
 
     def init_bg(self):
-        self.login_ui_bg = Image.open(r'images\login_ui_bg.jpg')
-        self.login_ui_bg = self.login_ui_bg.resize((1276,716))
-        self.tkinter_login_ui_bg = ImageTk.PhotoImage(self.login_ui_bg)
-        self.show_login_ui_bg = ttk.Label(self, image=self.tkinter_login_ui_bg)
-        self.show_login_ui_bg.grid(column = 0, row = 0, columnspan = 3, rowspan = 3, sticky=tk.NSEW)
+        login_ui_bg = Image.open(r'images\login_ui_bg.jpg')
+        login_ui_bg = login_ui_bg.resize((1276,716))
+        self.tkinter_login_ui_bg = ImageTk.PhotoImage(login_ui_bg)
+        show_login_ui_bg = ttk.Label(self, image=self.tkinter_login_ui_bg)
+        show_login_ui_bg.grid(column = 0, row = 0, columnspan = 3, rowspan = 3, sticky=tk.NSEW)
 
     def init_login_frame(self):
         # Frame
@@ -56,41 +60,37 @@ class LoginUI(ttk.Frame):
         self.rowconfigure(7, weight = 1) # Login
 
     def setup_images(self):
-        self.login_box_bg = Image.open(r'images/login_box_bg.jpg')
-        self.login_box_bg = self.login_box_bg.resize((350,630))
-        self.tkinter_login_box_bg = ImageTk.PhotoImage(self.login_box_bg)
-        self.show_login_box_bg = ttk.Label(self.login_box, image=self.tkinter_login_box_bg, background = "black")
-        self.show_login_box_bg.grid(column = 0, row = 0, rowspan = 8)
+        login_box_bg = Image.open(r'images/login_box_bg.jpg')
+        login_box_bg = login_box_bg.resize((350,630))
+        self.tkinter_login_box_bg = ImageTk.PhotoImage(login_box_bg)
+        show_login_box_bg = ttk.Label(self.login_box, image=self.tkinter_login_box_bg, background = "black")
+        show_login_box_bg.grid(column = 0, row = 0, rowspan = 8)
 
-        self.system_logo_label = Image.open(r'images/system_logo.png')
-        self.system_logo_label = self.system_logo_label.resize((270,230))
-        self.tkinter_system_logo_label = ImageTk.PhotoImage(self.system_logo_label)
-        self.show_system_logo_label = ttk.Label(self.login_box, image=self.tkinter_system_logo_label, background = "black")
-        self.show_system_logo_label.grid(column = 0, row = 0, pady = 25)
-
-    def setup_fonts(self):
-        self.welcome_label_font = tkFont.Font(family="Arial", size = 23, weight = "bold")
-        self.login_label_font = tkFont.Font(family="Arial", size = 18, weight = "bold")
-        self.other_element_fonts = tkFont.Font(family="Eras Bold ITC", size = 13, weight = "bold")
+        system_logo_label = Image.open(r'images/system_logo.png')
+        system_logo_label = system_logo_label.resize((270,230))
+        self.tkinter_system_logo_label = ImageTk.PhotoImage(system_logo_label)
+        show_system_logo_label = ttk.Label(self.login_box, image=self.tkinter_system_logo_label, background = "black")
+        show_system_logo_label.grid(column = 0, row = 0, pady = 25)
 
     def setup_labels(self):
-        self.username_label = ttk.Label(self.login_box, text = 'Username:', font = self.other_element_fonts, foreground = "white", background = "#6B7278")
-        self.username_label.grid(column = 0, row = 3, sticky = tk.W, padx = 10, pady = 3)
-        self.password_label = ttk.Label(self.login_box, text = 'Password:', font = self.other_element_fonts, foreground = "white", background = "#686E73")
-        self.password_label.grid(column = 0, row = 5, sticky = tk.W, padx = 10, pady = 3)
+        username_label = ttk.Label(self.login_box, text = 'Username:', font = ERAS_BOLD_FONT, foreground = "white", background = "#6B7278")
+        username_label.grid(column = 0, row = 3, sticky = tk.W, padx = 10, pady = 3)
+
+        password_label = ttk.Label(self.login_box, text = 'Password:', font = ERAS_BOLD_FONT, foreground = "white", background = "#686E73")
+        password_label.grid(column = 0, row = 5, sticky = tk.W, padx = 10, pady = 3)
 
     def setup_entries(self):
         self.username_data = tk.StringVar()
-        self.username_entry = ttk.Entry(self.login_box, textvariable = self.username_data)
-        self.username_entry.grid(column = 0, row = 4, ipadx = 100, ipady = 5, pady = 3)
+        username_entry = ttk.Entry(self.login_box, textvariable = self.username_data)
+        username_entry.grid(column = 0, row = 4, ipadx = 100, ipady = 5, pady = 3)
 
         self.password_data = tk.StringVar()
-        self.password_entry = ttk.Entry(self.login_box, textvariable = self.password_data, show = "*")
-        self.password_entry.grid(column = 0, row = 6, ipadx = 100, ipady = 5, pady = 3)
+        password_entry = ttk.Entry(self.login_box, textvariable = self.password_data, show = "*")
+        password_entry.grid(column = 0, row = 6, ipadx = 100, ipady = 5, pady = 3)
 
     def setup_button(self):
-        self.login_button = ttk.Button(self.login_box, text = 'Login', command = lambda: validate_login_credentials(self.root, self.username_data.get(), self.password_data.get()))
-        self.login_button.grid(column = 0, row = 7, ipadx = 50, ipady = 20, padx = 10, pady = 15)
+        login_button = ttk.Button(self.login_box, text = 'Login', command = lambda: validate_login_credentials(self.root, self.username_data.get(), self.password_data.get()))
+        login_button.grid(column = 0, row = 7, ipadx = 50, ipady = 20, padx = 10, pady = 15)
 
 
 def validate_login_credentials(root, username, password):
