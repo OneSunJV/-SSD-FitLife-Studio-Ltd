@@ -4,6 +4,8 @@ connection = sqlite3.connect('SystemDatabase.db')
 cursor_object = connection.cursor()
 connection.execute('''CREATE TABLE IF NOT EXISTS Employees (
                         EmployeeID INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Username TEXT NOT NULL,
+                        PasswordHash TEXT NOT NULL,
                         FirstName TEXT NOT NULL,
                         MiddleNames TEXT,
                         LastName TEXT NOT NULL,
