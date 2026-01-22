@@ -67,17 +67,13 @@ connection.execute('''CREATE TABLE IF NOT EXISTS Equipment (
 connection.execute('''CREATE TABLE IF NOT EXISTS Members (
                         MemberID INTEGER PRIMARY KEY AUTOINCREMENT,
                         FirstName TEXT NOT NULL,
-                        MiddleNames TEXT,
                         LastName TEXT NOT NULL,
                         DateOfBirth DATE NOT NULL,
                         EmailAddress TEXT NOT NULL,
-                        PhoneNumber INTEGER NOT NULL,
+                        PhoneNumber TEXT NOT NULL,
                         MembershipType INTEGER,
-                        JoinDate DATE NOT NULL,
-                        LeftDate DATE,
-                        MembershipPurchaseDate DATE,
-                        MembershipEndDate DATE,
-                        FOREIGN KEY (MembershipType) REFERENCES MembershipTypes (MembershipTypeID)
+                        NextPaymentDate DATE,
+                        FOREIGN KEY (MembershipType) REFERENCES MembershipTypes (MembershipType)
                    );''')
 
 connection.execute('''CREATE TABLE IF NOT EXISTS FitnessWatchLogs (
