@@ -5,10 +5,13 @@ print("Running database creation script...            |")
 print("-----------------------------------------------|")
 try:
      
+
      connection = sqlite3.connect('SystemDatabase.db')
      cursor_object = connection.cursor()
      connection.execute('''CREATE TABLE IF NOT EXISTS Employees (
                          EmployeeID INTEGER PRIMARY KEY AUTOINCREMENT,
+                         Username TEXT NOT NULL,
+                         PasswordHash TEXT NOT NULL,
                          FirstName TEXT NOT NULL,
                          MiddleNames TEXT,
                          LastName TEXT NOT NULL,
@@ -73,30 +76,14 @@ try:
      connection.execute('''CREATE TABLE IF NOT EXISTS Members (
                          MemberID INTEGER PRIMARY KEY AUTOINCREMENT,
                          FirstName TEXT NOT NULL,
-                         MiddleNames TEXT,
                          LastName TEXT NOT NULL,
                          DateOfBirth DATE NOT NULL,
                          EmailAddress TEXT NOT NULL,
-                         PhoneNumber INTEGER NOT NULL,
+                         PhoneNumber TEXT NOT NULL,
                          MembershipType INTEGER,
-                         JoinDate DATE NOT NULL,
-                         LeftDate DATE,
-                         MembershipPurchaseDate DATE,
-                         MembershipEndDate DATE,
+                         NextPaymentDate DATE,
                          FOREIGN KEY (MembershipType) REFERENCES MembershipTypes (MembershipType)
                     );''')
-
-     # connection.execute('''CREATE TABLE IF NOT EXISTS FitnessWatchLogs (
-     #                         FitnessWatchLogID INTEGER PRIMARY KEY AUTOINCREMENT,
-     #                         SessionID INTEGER,
-     #                         MemberID INTEGER,
-     #                         CaloriesBurnt INTEGER,
-     #                         AverageHeartRate INTEGER,
-     #                         MaximumHeartRate INTEGER,
-     #                         MinimumHeartRate INTEGER,
-     #                         FOREIGN KEY (SessionID) REFERENCES Sessions (SessionID),
-     #                         FOREIGN KEY (MemberID) REFERENCES Members (MemberID)
-     #                    );''')
 
      connection.execute('''CREATE TABLE IF NOT EXISTS SessionAttendees (
                          SessionAttendeeID INTEGER PRIMARY KEY AUTOINCREMENT,
