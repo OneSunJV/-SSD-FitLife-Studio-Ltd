@@ -97,7 +97,7 @@ def validate_login_credentials(root, username, password):
     connection = sqlite3.connect('SystemDatabase.db')
     cursor = connection.cursor()
 
-    cursor.execute('SELECT PasswordHash, FirstName, LastName, EmployeeID FROM Employees WHERE username = ?', (username,))
+    cursor.execute('''SELECT PasswordHash, FirstName, LastName, EmployeeID FROM Employees WHERE Username = ?''', (username,))
 
     row = cursor.fetchone()
 

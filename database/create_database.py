@@ -8,7 +8,7 @@ try:
 
      connection = sqlite3.connect('SystemDatabase.db')
      cursor_object = connection.cursor()
-     connection.execute('''CREATE TABLE IF NOT EXISTS Employees (
+     cursor_object.execute('''CREATE TABLE IF NOT EXISTS Employees (
                          EmployeeID INTEGER PRIMARY KEY AUTOINCREMENT,
                          Username TEXT NOT NULL,
                          PasswordHash TEXT NOT NULL,
@@ -23,13 +23,13 @@ try:
                          EmployeeType TEXT NOT NULL
                     );''')
 
-     connection.execute('''CREATE TABLE IF NOT EXISTS Classes (
+     cursor_object.execute('''CREATE TABLE IF NOT EXISTS Classes (
                          ClassID INTEGER PRIMARY KEY AUTOINCREMENT,
                          ClassType TEXT,
                          ClassDescription TEXT
                     );''')
 
-     connection.execute('''CREATE TABLE IF NOT EXISTS SessionMemberPayments (
+     cursor_object.execute('''CREATE TABLE IF NOT EXISTS SessionMemberPayments (
                          SessionPaymentID INTEGER PRIMARY KEY AUTOINCREMENT,
                          MemberID INTEGER,
                          SessionID INTEGER,
@@ -42,14 +42,14 @@ try:
                          FOREIGN KEY (SessionID) REFERENCES Sessions (SessionID)
                     );''')
 
-     connection.execute('''CREATE TABLE IF NOT EXISTS MembershipTypes (
+     cursor_object.execute('''CREATE TABLE IF NOT EXISTS MembershipTypes (
                          MembershipTypeID INTEGER PRIMARY KEY AUTOINCREMENT,
                          MembershipDescription TEXT NOT NULL,
                          MembershipPricePerMonth INTEGER NOT NULL
                     );''')
 
 
-     connection.execute('''CREATE TABLE IF NOT EXISTS Sessions (
+     cursor_object.execute('''CREATE TABLE IF NOT EXISTS Sessions (
                          SessionID INTEGER PRIMARY KEY AUTOINCREMENT,
                          ClassID INTEGER,
                          TrainerID INTEGER,
@@ -63,7 +63,7 @@ try:
      
      
 
-     connection.execute('''CREATE TABLE IF NOT EXISTS Equipment (
+     cursor_object.execute('''CREATE TABLE IF NOT EXISTS Equipment (
                          EquipmentID INTEGER PRIMARY KEY AUTOINCREMENT,
                          EquipmentTypeID INTEGER,
                          RecentMaintenanceLogID INTEGER,
@@ -73,7 +73,7 @@ try:
                          FOREIGN KEY (RecentMaintenanceLogID) REFERENCES EquipmentMaintenanceCheckLogs (EquipmentMaintenanceCheckLogID)
                     );''')
 
-     connection.execute('''CREATE TABLE IF NOT EXISTS Members (
+     cursor_object.execute('''CREATE TABLE IF NOT EXISTS Members (
                          MemberID INTEGER PRIMARY KEY AUTOINCREMENT,
                          FirstName TEXT NOT NULL,
                          LastName TEXT NOT NULL,
@@ -85,7 +85,7 @@ try:
                          FOREIGN KEY (MembershipType) REFERENCES MembershipTypes (MembershipType)
                     );''')
 
-     connection.execute('''CREATE TABLE IF NOT EXISTS SessionAttendees (
+     cursor_object.execute('''CREATE TABLE IF NOT EXISTS SessionAttendees (
                          SessionAttendeeID INTEGER PRIMARY KEY AUTOINCREMENT,
                          MemberID INTEGER,
                          SessionID INTEGER,
@@ -93,7 +93,7 @@ try:
                          FOREIGN KEY (MemberID) REFERENCES Members (MemberID)
                     );''')
 
-     connection.execute('''CREATE TABLE IF NOT EXISTS EquipmentMaintenanceCheckLogs (
+     cursor_object.execute('''CREATE TABLE IF NOT EXISTS EquipmentMaintenanceCheckLogs (
                          EquipmentMaintenanceCheckLogID INTEGER PRIMARY KEY AUTOINCREMENT,
                          EquipmentID INTEGER,
                          MaintenanceCheckNotes TEXT NOT NULL,
@@ -106,12 +106,13 @@ try:
                          FOREIGN KEY (EquipmentID) REFERENCES Equipment (EquipmentID)
                     );''')
 
-     connection.execute('''CREATE TABLE IF NOT EXISTS EquipmentTypes (
+     cursor_object.execute('''CREATE TABLE IF NOT EXISTS EquipmentTypes (
                          EquipmentTypeID INTEGER PRIMARY KEY AUTOINCREMENT,
                          EquipmentManufacturer TEXT NOT NULL,
                          EquipmentModel TEXT NOT NULL,
                          EquipmentSubModel TEXT NOT NULL
                     );''')
+     
 
      connection.close()
      print("SUCCESS! Database has been created.            |")

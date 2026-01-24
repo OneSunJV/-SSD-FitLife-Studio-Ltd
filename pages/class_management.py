@@ -1,7 +1,33 @@
 import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry
+import sqlite3
 from datetime import datetime
+
+TRAINERS = []
+CLASSTYPES = []
+TIMES = ["9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00"]
+LOCATIONS = ["Location A", "Location B", "Location C"]
+
+#Getting Trainers
+connection = sqlite3.connect('SystemDatabase.db')
+cursor_object = connection.cursor()
+cursor_object.execute('''SELECT FirstName, LastName FROM Employees WHERE EmployeeType LIKE ?''', ("TRAINER",))
+trainers_entries = cursor_object.fetchall()
+connection.close()
+for trainer_data in trainers_entries:
+    TRAINERS.append(str(trainer_data[0]) +  " " + str(trainer_data[1]))
+
+#Getting Class Types
+connection = sqlite3.connect('SystemDatabase.db')
+cursor_object = connection.cursor()
+cursor_object.execute('''SELECT ClassType FROM Classes''')
+class_types_entries = cursor_object.fetchall()
+connection.close()
+for class_types_data in class_types_entries:
+    for class_type in class_types_data:
+        CLASSTYPES.append(str(class_type))
+
 
 class ClassManagementPage:
     def __init__(self, sample_frame):
@@ -42,7 +68,7 @@ class ClassManagementPage:
 
         # Defining filters title
         filters_label = ttk.Label(self.filters_frame, text="Search / Add / Remove Sessions", font=("Arial", 11, "bold"))
-        filters_label.grid(column=0, row=0, padx=5, pady=5, sticky=tk.EW)
+        filters_label.grid(column=0, row=0, columnspan=2, padx=5, pady=5, sticky=tk.EW)
 
         # Defining filters
         sessionID_label = ttk.Label(self.filters_frame, text="SessionID:")
@@ -51,46 +77,47 @@ class ClassManagementPage:
         self.sessionID_entrybox.grid(column=1, row=1, padx=5, sticky=tk.EW)
 
         classType_label = ttk.Label(self.filters_frame, text="Class Type:")
-        classType_label.grid(column=2, row=1, sticky=tk.E)
-        self.classType_entrybox = ttk.Entry(self.filters_frame)
+        classType_label.grid(column=2, row=1, sticky=tk.E)      
+        self.classType_entrybox = ttk.Combobox(self.filters_frame, values=CLASSTYPES)
         self.classType_entrybox.grid(column=3, padx=5, row=1, sticky=tk.EW)
 
         trainer_label = ttk.Label(self.filters_frame, text="Trainer:")
         trainer_label.grid(column=4, row=1, sticky=tk.E)
-        self.trainer_combobox = ttk.Combobox(self.filters_frame)
+        
+        self.trainer_combobox = ttk.Combobox(self.filters_frame, values=TRAINERS)
         self.trainer_combobox.grid(column=5, padx=5, row=1, sticky=tk.EW)
 
         sessionDate_label = ttk.Label(self.filters_frame, text="Session Date:")
         sessionDate_label.grid(column=6, row=1, sticky=tk.E)
-        self.sessionDate_dateEntry = DateEntry(self.filters_frame)
+        self.sessionDate_dateEntry = DateEntry(self.filters_frame, date_pattern="dd/MM/yyyy")
         self.sessionDate_dateEntry.grid(column=7, padx=5, row=1, sticky=tk.EW)
 
         sessionStartTime_label = ttk.Label(self.filters_frame, text="Session Start Time:")
         sessionStartTime_label.grid(column=0, row=2, sticky=tk.E)
-        self.sessionStartTime_combobox = ttk.Combobox(self.filters_frame)
+        self.sessionStartTime_combobox = ttk.Combobox(self.filters_frame, values=TIMES)
         self.sessionStartTime_combobox.grid(column=1, padx=5, row=2, sticky=tk.EW)
 
         sessionFinishTime_label = ttk.Label(self.filters_frame, text="Session Finish Time:")
         sessionFinishTime_label.grid(column=2, row=2, sticky=tk.E)
-        self.sessionFinishTime_combobox = ttk.Combobox(self.filters_frame)
+        self.sessionFinishTime_combobox = ttk.Combobox(self.filters_frame, values=TIMES)
         self.sessionFinishTime_combobox.grid(column=3, padx=5, row=2, sticky=tk.EW)
 
         sessionLocation_label = ttk.Label(self.filters_frame, text="Session Location:")
         sessionLocation_label.grid(column=4, row=2, sticky=tk.E)
-        self.sessionLocation_combobox = ttk.Combobox(self.filters_frame)
+        self.sessionLocation_combobox = ttk.Combobox(self.filters_frame, values=LOCATIONS)
         self.sessionLocation_combobox.grid(column=5, padx=5, row=2, sticky=tk.EW)
 
         # Defining action buttons
-        search_sessions_button = ttk.Button(self.filters_frame, text="Search sessions")
+        search_sessions_button = ttk.Button(self.filters_frame, text="🔍︎Search sessions", command=lambda: self.search_sessions())
         search_sessions_button.grid(column=4, row=3, sticky=tk.EW)
 
-        refresh_sessions_button = ttk.Button(self.filters_frame, text="Refresh sessions")
+        refresh_sessions_button = ttk.Button(self.filters_frame, text="➕ Add session", command=lambda: self.create_session())
         refresh_sessions_button.grid(column=5, row=3, sticky=tk.EW)
 
-        add_sessions_button = ttk.Button(self.filters_frame, text="Add session")
+        add_sessions_button = ttk.Button(self.filters_frame, text="➖ Delete session", command=lambda: self.delete_session())
         add_sessions_button.grid(column=6, row=3, sticky=tk.EW)
 
-        delete_sessions_button = ttk.Button(self.filters_frame, text="Delete session")
+        delete_sessions_button = ttk.Button(self.filters_frame, text="⟳ Refresh table", command=lambda: self.refresh_treeview())
         delete_sessions_button.grid(column=7, row=3, sticky=tk.EW)
 
 
@@ -136,9 +163,34 @@ class ClassManagementPage:
         
         self.sessions_table.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=5)
  
-    def create_session():
-        pass
-        #Create new window
     
-    def delete_session():
+    def search_sessions(self):
+        for row in self.sessions_table.get_children():
+            self.sessions_table.delete(row)
+
+        connection = sqlite3.connect('SystemDatabase.db')
+        cursor_object = connection.cursor()
+        cursor_object.execute('''SELECT * FROM Sessions''')
+        search_results = cursor_object.fetchall()
+        print(search_results)
+        connection.close()
+        for session in search_results:
+                self.sessions_table.insert("", tk.END, values=session,)
+
+    def create_session(self):
         pass
+    
+    def delete_session(self):
+        pass
+
+    def refresh_treeview(self):
+        for row in self.sessions_table.get_children():
+            self.sessions_table.delete(row)
+
+        connection = sqlite3.connect('SystemDatabase.db')
+        cursor_object = connection.cursor()
+        cursor_object.execute('''SELECT * FROM Sessions''')
+        search_results = cursor_object.fetchall()
+        connection.close()
+        for session in search_results:
+                self.sessions_table.insert("", tk.END, values=session,)
