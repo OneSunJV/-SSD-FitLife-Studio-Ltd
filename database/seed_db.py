@@ -13,6 +13,16 @@ connection.execute('''INSERT INTO Employees
                       VALUES 
                         (1, 'JohnDoe', ?, 'John', 'Doe', '2000-01-01', 'john@gmail.com', '07000000000', '2026-01-19', 'ADMIN');''', (password_hash,))
 
+connection.execute('''INSERT INTO Employees 
+                        (EmployeeID, Username, PasswordHash, FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, JoinDate, EmployeeType)  
+                      VALUES 
+                        (2, 'Spiderman', ?, 'Peter', 'Parker', '2001-01-01', 'peter@gmail.com', '07100000000', '2026-01-19', 'TRAINER');''', (password_hash,))
+
+connection.execute('''INSERT INTO Employees 
+                        (EmployeeID, Username, PasswordHash, FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, JoinDate, EmployeeType)  
+                      VALUES 
+                        (3, 'Batman', ?, 'Bruce', 'Wayne', '2002-01-01', 'bruce@gmail.com', '07200000000', '2026-01-19', 'TRAINER');''', (password_hash,))
+
 connection.execute('''INSERT INTO Classes 
                    (ClassID, ClassType, ClassDescription)  
                    VALUES 
@@ -57,7 +67,7 @@ for day in range(1, days_in_month + 1):
 
         connection.execute(f'''INSERT INTO Sessions
                               (SessionID, ClassID, TrainerID, SessionStartTime, SessionFinishTime, SessionDate)
-                              VALUES ({idx}, {class_id}, 1, '{start_time}', '{finish_time}', '{date_str}');''')
+                              VALUES ({idx}, {class_id}, 2, '{start_time}', '{finish_time}', '{date_str}');''')
 
         idx += 1
 
