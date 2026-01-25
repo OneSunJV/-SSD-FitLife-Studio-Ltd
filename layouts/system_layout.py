@@ -40,9 +40,9 @@ class SystemLayout:
     
   # ---------------- Sidebar ---------------- #
     def init_sidebar(self):
-        frame = ttk.Frame(self.root, width=280, height=720)
+        frame = tk.Frame(self.root, width=280, height=720, background='#628141', relief="sunken")
         frame.grid(row=0, column=0, rowspan=2, sticky=tk.NSEW)
-        #frame.grid_propagate(False)  # keep the width/height
+        frame.grid_propagate(False)  # keep the width/height
         frame.columnconfigure(0, weight=1)
 
         # FitLife Logo
@@ -75,24 +75,24 @@ class SystemLayout:
     
     # ---------------- Header ---------------- #
     def init_header(self):
-        frame = tk.Frame(self.root, bg="red", width=1000, height=60)
+        frame = tk.Frame(self.root, background='#73964d', width=1000, height=60)
         frame.grid(row=0, column=1, sticky="nsew")
         frame.grid_propagate(False)
         self.header_frame = frame
 
-        # logo = tk.Label(
-        #     frame,
-        #     text="FitLife Studios",
-        #     bg="green",
-        #     fg="white",
-        #     font=("Helvetica", 24, "bold"),
-        #     justify="center"
-        # )
-        # logo.grid(row=0, column=0, padx=10, pady=(20, 30), sticky="n")
+        logo = tk.Label(
+            frame,
+            text="FitLife Studios WBMS",
+            background='#73964d',
+            fg="white",
+            font=("Helvetica", 24, "bold"),
+            justify="center"
+        )
+        logo.grid(row=0, column=0, padx=300, pady=10, sticky=tk.NSEW)
 
     # ---------------- Page Container ---------------- #
     def init_page_container(self):
-        self.page_container = tk.Frame(self.root, bg="blue", width=1000, height=660)
+        self.page_container = tk.Frame(self.root, background="#f0f7e9", width=1000, height=660)
         self.page_container.grid(row=1, column=1, sticky=tk.NSEW)
 
 

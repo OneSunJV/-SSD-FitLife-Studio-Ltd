@@ -5,18 +5,21 @@ import sqlite3
 from datetime import datetime
 
 TRAINERS = []
+TRAINERS_WITH_ID_APPENDED = []
 CLASSTYPES = []
-TIMES = ["9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00"]
+TIMES = ["9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00"]
 LOCATIONS = ["Location A", "Location B", "Location C"]
 
 #Getting Trainers
 connection = sqlite3.connect('SystemDatabase.db')
 cursor_object = connection.cursor()
-cursor_object.execute('''SELECT FirstName, LastName FROM Employees WHERE EmployeeType LIKE ?''', ("TRAINER",))
+cursor_object.execute('''SELECT FirstName, LastName, EmployeeID FROM Employees WHERE EmployeeType LIKE ?''', ("TRAINER",))
 trainers_entries = cursor_object.fetchall()
 connection.close()
 for trainer_data in trainers_entries:
     TRAINERS.append(str(trainer_data[0]) +  " " + str(trainer_data[1]))
+    TRAINERS_WITH_ID_APPENDED.append((trainer_data[2], str(trainer_data[0]) +  " " + str(trainer_data[1])))
+    print((trainer_data[2], str(trainer_data[0]) +  " " + str(trainer_data[1])))
 
 #Getting Class Types
 connection = sqlite3.connect('SystemDatabase.db')
@@ -138,7 +141,7 @@ class ClassManagementPage:
         session_records_label.grid(column=0, row=0, sticky=tk.NSEW, padx=400)
 
         # Defining Treeview
-        table_columns = ("SessionID", "Class Type", "Trainer", "Session Date", "Session Start Time", "Session Finish Time", "Spaces Available", "Session Location")
+        table_columns = ("SessionID", "Class Type", "Trainer", "Session Date", "Session Start Time", "Session Finish Time", "Session Location")
         self.sessions_table = ttk.Treeview(self.treeview_frame, columns=table_columns, show="headings")
 
         self.sessions_table.heading("SessionID", text="SessionID")
@@ -147,17 +150,15 @@ class ClassManagementPage:
         self.sessions_table.heading("Session Date", text="Session Date")
         self.sessions_table.heading("Session Start Time", text="Session Start Time")
         self.sessions_table.heading("Session Finish Time", text="Session Finish Time")
-        self.sessions_table.heading("Spaces Available", text="Spaces Available")
         self.sessions_table.heading("Session Location", text="Session Location")
 
-        self.sessions_table.column("SessionID", width=40)
-        self.sessions_table.column("Class Type", width=70)
-        self.sessions_table.column("Trainer", width=90)
+        self.sessions_table.column("SessionID", width=60)
+        self.sessions_table.column("Class Type", width=100)
+        self.sessions_table.column("Trainer", width=100)
         self.sessions_table.column("Session Date", width=80)
         self.sessions_table.column("Session Start Time", width=80)
         self.sessions_table.column("Session Finish Time", width=80)
-        self.sessions_table.column("Spaces Available", width=80)
-        self.sessions_table.column("Session Location", width=80)
+        self.sessions_table.column("Session Location", width=100)
 
         self.sessions_table.insert("", tk.END, values=(1,2,3,4,5,6,7),)
         
@@ -170,15 +171,26 @@ class ClassManagementPage:
 
         connection = sqlite3.connect('SystemDatabase.db')
         cursor_object = connection.cursor()
-        cursor_object.execute('''SELECT * FROM Sessions''')
-        search_results = cursor_object.fetchall()
-        print(search_results)
+        cursor_object.execute('''SELECT SessionID, ClassType, TrainerID, SessionDate, SessionStartTime, SessionFinishTime, SessionLocation FROM Sessions INNER JOIN Classes ON Sessions.ClassID = Classes.ClassID;''')
+        search_results_tuple = cursor_object.fetchall()
         connection.close()
-        for session in search_results:
-                self.sessions_table.insert("", tk.END, values=session,)
+        session_list = []
+        trainer_name = ''
+        for session_tuple in search_results_tuple:
+            for trainer in TRAINERS_WITH_ID_APPENDED:
+                if session_tuple[2] == trainer[0]:
+                    trainer_name = trainer[1]
+            session_list.append((session_tuple[0], session_tuple[1], trainer_name, session_tuple[3], session_tuple[4], session_tuple[5], session_tuple[6]))
+        for session in session_list:
+            self.sessions_table.insert("", tk.END, values=session,)
 
     def create_session(self):
-        pass
+        self.session_ID = self.sessionID_entrybox.get()
+        self.class_type = self.classType_entrybox.get()
+        self.trainer_name = self.trainer_combobox.get()
+        self.session_date = self.sessionDate_dateEntry.get_date()
+        self.session_start_time = self.sessionStartTime_combobox.get()
+        self.session_end_time = self.sessionFinishTime_combobox.get()
     
     def delete_session(self):
         pass
@@ -189,8 +201,15 @@ class ClassManagementPage:
 
         connection = sqlite3.connect('SystemDatabase.db')
         cursor_object = connection.cursor()
-        cursor_object.execute('''SELECT * FROM Sessions''')
-        search_results = cursor_object.fetchall()
+        cursor_object.execute('''SELECT SessionID, ClassType, TrainerID, SessionDate, SessionStartTime, SessionFinishTime, SessionLocation FROM Sessions INNER JOIN Classes ON Sessions.ClassID = Classes.ClassID;''')
+        search_results_tuple = cursor_object.fetchall()
         connection.close()
-        for session in search_results:
-                self.sessions_table.insert("", tk.END, values=session,)
+        session_list = []
+        trainer_name = ''
+        for session_tuple in search_results_tuple:
+            for trainer in TRAINERS_WITH_ID_APPENDED:
+                if session_tuple[2] == trainer[0]:
+                    trainer_name = trainer[1]
+            session_list.append((session_tuple[0], session_tuple[1], trainer_name, session_tuple[3], session_tuple[4], session_tuple[5], session_tuple[6]))
+        for session in session_list:
+            self.sessions_table.insert("", tk.END, values=session,)

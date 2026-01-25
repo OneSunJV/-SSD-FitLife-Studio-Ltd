@@ -67,7 +67,7 @@ for day in range(1, days_in_month + 1):
 
         connection.execute(f'''INSERT INTO Sessions
                               (SessionID, ClassID, TrainerID, SessionStartTime, SessionFinishTime, SessionDate)
-                              VALUES ({idx}, {class_id}, 1, '{start_time}', '{finish_time}', '{date_str}');''')
+                              VALUES ({idx}, {class_id}, 2, '{start_time}', '{finish_time}', '{date_str}');''')
 
         idx += 1
 
