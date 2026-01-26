@@ -8,7 +8,7 @@ import re
 #Page for member management - to include tabs for managing current members & adding new members
 class MemberPage:
     def __init__(self, frame):
-        self.bg_colour = "lightblue"
+        self.bg_colour = "white"
         self.button_font = ("Verdana", 20)
 
         #Creates frame for the members page to house widgets
@@ -162,7 +162,7 @@ class MemberPage:
     def add_widgets(self, frame, tab_name):
 
         #defines a ttk style used for all labels in this tab
-        widget_font = ("Verdana", 15)
+        widget_font = ("Verdana", 15, )
         label_style = ttk.Style()
         label_style.theme_use("clam")
         label_style.configure("MemberWidget.TLabel", font=widget_font, background=self.bg_colour)
@@ -198,7 +198,7 @@ class MemberPage:
         #Date of birth label & datepicker
         dob_lbl = ttk.Label(frame, text="Date of Birth", style="MemberWidget.TLabel")
         dob_lbl.place(x = x_position, y = y_position + (y_gap*2))
-        dob_dtp = DateEntry(frame, font=widget_font, background="lightgray", date_pattern="dd-mm-yyyy", showweeknumbers=False)
+        dob_dtp = DateEntry(frame, font=widget_font, background="lightgray", foreground="black", date_pattern="dd-mm-yyyy", showweeknumbers=False)
         dob_dtp.place(x = x_position + x_gap + 105, y= y_position + (y_gap*2))
         dob_dtp.bind("<FocusOut>", lambda e: dob_dtp._top_cal.withdraw())
 
@@ -225,7 +225,7 @@ class MemberPage:
         #Next payment date label and datepicker
         next_payment_date_lbl = ttk.Label(frame, text="Next Payment Date", style="MemberWidget.TLabel")
         next_payment_date_lbl.place(x = x_position, y = y_position + (y_gap*6))
-        next_payment_date_dtp = DateEntry(frame, font=widget_font, date_pattern="dd-mm-yyyy", background="white", showweeknumbers=False)
+        next_payment_date_dtp = DateEntry(frame, font=widget_font, background="lightgray", foreground="black", date_pattern="dd-mm-yyyy", showweeknumbers=False)
         next_payment_date_dtp.place(x = x_position + x_gap + 105, y= y_position + (y_gap*6))
         next_payment_date_dtp.bind("<FocusOut>", lambda e: next_payment_date_dtp._top_cal.withdraw())
 
