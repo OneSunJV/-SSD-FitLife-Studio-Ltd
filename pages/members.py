@@ -204,7 +204,7 @@ class MemberPage:
         dob_lbl.place(x = x_position, y = y_position + (y_gap*2))
         dob_dtp = DateEntry(frame, font=widget_font, background="lightgray", foreground="black", date_pattern="dd-mm-yyyy", showweeknumbers=False)
         dob_dtp.place(x = x_position + x_gap + 105, y = y_position + (y_gap*2))
-        dob_dtp.bind("<FocusOut>", lambda e: dob_dtp._top_cal.withdraw())
+        dob_dtp.bind("<FocusOut>", lambda e: dob_dtp._top_cal.withdraw)
 
         #Email address label & entry
         email_lbl = ttk.Label(frame, text="Email", style="MemberWidget.TLabel")
@@ -231,7 +231,7 @@ class MemberPage:
         next_payment_date_lbl.place(x = x_position, y = y_position + (y_gap*6))
         next_payment_date_dtp = DateEntry(frame, font=widget_font, background="lightgray", foreground="black", date_pattern="dd-mm-yyyy", showweeknumbers=False)
         next_payment_date_dtp.place(x = x_position + x_gap + 105, y = y_position + (y_gap*6))
-        next_payment_date_dtp.bind("<FocusOut>", lambda e: next_payment_date_dtp._top_cal.withdraw())
+        next_payment_date_dtp.bind("<FocusOut>", lambda e: next_payment_date_dtp._top_cal.withdraw)
 
         #Selection statement to configure tab depending on if for the Add Member or Find Member tab - add_widgets() used commonly for both
         if tab_name == "add":
@@ -437,6 +437,12 @@ class MemberPage:
                 WHERE MemberID = {member[0]};''')
             data = cursor.fetchall()
             cursor.close()
+
+            #Converts date values back into UK format for display
+            dob = datetime.strptime(data[0][3], "%Y-%m-%d")
+            next_payment_date = datetime.strptime(data[0][7], "%Y-%m-%d")
+            dob = dob.strftime("%d-%m-%Y")
+            next_payment_date = next_payment_date.strftime("%d-%m-%Y")
         else:
             return None
 
@@ -445,11 +451,11 @@ class MemberPage:
             "id" : data[0][0],
             "first_name" : data[0][1],
             "last_name" : data[0][2],
-            "dob" : data[0][3],
+            "dob" : dob,
             "email": data[0][4],
             "phone": data[0][5],
             "membership_type": data[0][6],
-            "next_payment_date": data[0][7]
+            "next_payment_date": next_payment_date
         }
 
         return selected_member
