@@ -10,28 +10,6 @@ CLASSTYPES = []
 TIMES = ["9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00"]
 LOCATIONS = ["Location A", "Location B", "Location C"]
 
-#Getting Trainers
-connection = sqlite3.connect('SystemDatabase.db')
-cursor_object = connection.cursor()
-cursor_object.execute('''SELECT FirstName, LastName, EmployeeID FROM Employees WHERE EmployeeType LIKE ?''', ("TRAINER",))
-trainers_entries = cursor_object.fetchall()
-connection.close()
-for trainer_data in trainers_entries:
-    TRAINERS.append(str(trainer_data[0]) +  " " + str(trainer_data[1]))
-    TRAINERS_WITH_ID_APPENDED.append((trainer_data[2], str(trainer_data[0]) +  " " + str(trainer_data[1])))
-    print((trainer_data[2], str(trainer_data[0]) +  " " + str(trainer_data[1])))
-
-#Getting Class Types
-connection = sqlite3.connect('SystemDatabase.db')
-cursor_object = connection.cursor()
-cursor_object.execute('''SELECT ClassType FROM Classes''')
-class_types_entries = cursor_object.fetchall()
-connection.close()
-for class_types_data in class_types_entries:
-    for class_type in class_types_data:
-        CLASSTYPES.append(str(class_type))
-
-
 class ClassManagementPage:
     def __init__(self, sample_frame):
         self.frame = sample_frame
@@ -47,6 +25,29 @@ class ClassManagementPage:
         # Calling methods that setup different UI parts of page
         self.init_filters_frame()
         self.init_treeview_frame()
+
+        self.load_data()
+
+    def load_data(self):
+        # Getting Trainers
+        with sqlite3.connect('SystemDatabase.db') as connection:
+            cursor_object = connection.cursor()
+            cursor_object.execute('''SELECT FirstName, LastName, EmployeeID
+                                     FROM Employees
+                                     WHERE EmployeeType LIKE ?''', ("TRAINER",))
+            trainers_entries = cursor_object.fetchall()
+            for trainer_data in trainers_entries:
+                TRAINERS.append(str(trainer_data[0]) + " " + str(trainer_data[1]))
+                TRAINERS_WITH_ID_APPENDED.append((trainer_data[2], str(trainer_data[0]) + " " + str(trainer_data[1])))
+                print((trainer_data[2], str(trainer_data[0]) + " " + str(trainer_data[1])))
+
+            # Getting Class Types
+            cursor_object.execute('''SELECT ClassType
+                                     FROM Classes''')
+            class_types_entries = cursor_object.fetchall()
+            for class_types_data in class_types_entries:
+                for class_type in class_types_data:
+                    CLASSTYPES.append(str(class_type))
 
     def init_filters_frame(self):
         self.filters_frame = ttk.Frame(self.frame)
