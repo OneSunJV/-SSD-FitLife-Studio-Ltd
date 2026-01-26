@@ -4,72 +4,77 @@ from datetime import datetime
 from calendar import monthrange
 import bcrypt
 
-connection = sqlite3.connect('SystemDatabase.db')
-cursor_object = connection.cursor()
 
-password_hash = bcrypt.hashpw("12345".encode('utf-8'), bcrypt.gensalt())
-connection.execute('''INSERT INTO Employees 
-                        (EmployeeID, Username, PasswordHash, FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, JoinDate, EmployeeType)  
-                      VALUES 
-                        (1, 'JohnDoe', ?, 'John', 'Doe', '2000-01-01', 'john@gmail.com', '07000000000', '2026-01-19', 'ADMIN');''', (password_hash,))
+def seed_db():
+    connection = sqlite3.connect('SystemDatabase.db')
+    cursor_object = connection.cursor()
 
-connection.execute('''INSERT INTO Employees 
-                        (EmployeeID, Username, PasswordHash, FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, JoinDate, EmployeeType)  
-                      VALUES 
-                        (2, 'Spiderman', ?, 'Peter', 'Parker', '2001-01-01', 'peter@gmail.com', '07100000000', '2026-01-19', 'TRAINER');''', (password_hash,))
+    password_hash = bcrypt.hashpw("12345".encode('utf-8'), bcrypt.gensalt())
+    connection.execute('''INSERT INTO Employees 
+                            (EmployeeID, Username, PasswordHash, FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, JoinDate, EmployeeType)  
+                          VALUES 
+                            (1, 'JohnDoe', ?, 'John', 'Doe', '2000-01-01', 'john@gmail.com', '07000000000', '2026-01-19', 'ADMIN');''', (password_hash,))
 
-connection.execute('''INSERT INTO Employees 
-                        (EmployeeID, Username, PasswordHash, FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, JoinDate, EmployeeType)  
-                      VALUES 
-                        (3, 'Batman', ?, 'Bruce', 'Wayne', '2002-01-01', 'bruce@gmail.com', '07200000000', '2026-01-19', 'TRAINER');''', (password_hash,))
+    connection.execute('''INSERT INTO Employees 
+                            (EmployeeID, Username, PasswordHash, FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, JoinDate, EmployeeType)  
+                          VALUES 
+                            (2, 'Spiderman', ?, 'Peter', 'Parker', '2001-01-01', 'peter@gmail.com', '07100000000', '2026-01-19', 'TRAINER');''', (password_hash,))
 
-connection.execute('''INSERT INTO Classes 
-                   (ClassID, ClassType, ClassDescription)  
-                   VALUES 
-                   (1, 'Strength Training', 'Strength Training Description');''')
+    connection.execute('''INSERT INTO Employees 
+                            (EmployeeID, Username, PasswordHash, FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, JoinDate, EmployeeType)  
+                          VALUES 
+                            (3, 'Batman', ?, 'Bruce', 'Wayne', '2002-01-01', 'bruce@gmail.com', '07200000000', '2026-01-19', 'TRAINER');''', (password_hash,))
 
-connection.execute('''INSERT INTO Classes 
-                   (ClassID, ClassType, ClassDescription)  
-                   VALUES 
-                   (2, 'HIIT', 'HIIT Description');''')
+    connection.execute('''INSERT INTO Classes 
+                       (ClassID, ClassType, ClassDescription)  
+                       VALUES 
+                       (1, 'Strength Training', 'Strength Training Description');''')
 
-connection.execute('''INSERT INTO Classes 
-                   (ClassID, ClassType, ClassDescription)  
-                   VALUES 
-                   (3, 'Spin Class', 'Spin Class Description');''')
+    connection.execute('''INSERT INTO Classes 
+                       (ClassID, ClassType, ClassDescription)  
+                       VALUES 
+                       (2, 'HIIT', 'HIIT Description');''')
 
-connection.execute('''INSERT INTO Classes 
-                   (ClassID, ClassType, ClassDescription)  
-                   VALUES 
-                   (4, 'Dance Class', 'Dance Class Description');''')
+    connection.execute('''INSERT INTO Classes 
+                       (ClassID, ClassType, ClassDescription)  
+                       VALUES 
+                       (3, 'Spin Class', 'Spin Class Description');''')
 
-connection.execute('''INSERT INTO Classes 
-                   (ClassID, ClassType, ClassDescription)  
-                   VALUES 
-                   (5, 'Yoga', 'Yoga Description');''')
+    connection.execute('''INSERT INTO Classes 
+                       (ClassID, ClassType, ClassDescription)  
+                       VALUES 
+                       (4, 'Dance Class', 'Dance Class Description');''')
+
+    connection.execute('''INSERT INTO Classes 
+                       (ClassID, ClassType, ClassDescription)  
+                       VALUES 
+                       (5, 'Yoga', 'Yoga Description');''')
 
 
-current_month = datetime.now().month
-current_year = datetime.now().year
+    current_month = datetime.now().month
+    current_year = datetime.now().year
 
-_, days_in_month = monthrange(current_year, current_month)
+    _, days_in_month = monthrange(current_year, current_month)
 
-idx = 1
-for day in range(1, days_in_month + 1):
-    date_str = f'{current_year}-{current_month:02}-{day:02}'
+    idx = 1
+    for day in range(1, days_in_month + 1):
+        date_str = f'{current_year}-{current_month:02}-{day:02}'
 
-    for i in range(0, random.randint(0,5)):
-        class_id = random.randint(1, 5)
+        for i in range(0, random.randint(0,5)):
+            class_id = random.randint(1, 5)
 
-        start_hour = random.randint(0,23)
-        start_time = datetime(current_year, current_month, day, start_hour).timestamp()
-        finish_time = start_time + 1 * 60 * 60
+            start_hour = random.randint(0,23)
+            start_time = datetime(current_year, current_month, day, start_hour).timestamp()
+            finish_time = start_time + 1 * 60 * 60
 
-        connection.execute(f'''INSERT INTO Sessions
-                              (SessionID, ClassID, TrainerID, SessionStartTime, SessionFinishTime, SessionDate)
-                              VALUES ({idx}, {class_id}, 2, '{start_time}', '{finish_time}', '{date_str}');''')
+            connection.execute(f'''INSERT INTO Sessions
+                                  (SessionID, ClassID, TrainerID, SessionStartTime, SessionFinishTime, SessionDate)
+                                  VALUES ({idx}, {class_id}, 2, '{start_time}', '{finish_time}', '{date_str}');''')
 
-        idx += 1
+            idx += 1
 
-connection.commit()
-connection.close()
+    connection.commit()
+    connection.close()
+
+if __name__ == '__main__':
+    seed_db()
