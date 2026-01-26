@@ -18,7 +18,7 @@ class MemberPage:
         self.button_font = ("Verdana", 15)
         self.button_width = 32
         self.button_height = 1
-        self.notebook_y_position = 20
+        self.notebook_y_position = 0
 
         #Creates frame for the members page to house widgets
         self.frame = frame
@@ -39,9 +39,15 @@ class MemberPage:
     #Function that defines, configures and returns a list box showing members
     def setup_member_table(self):
 
+        #Configure treeview style
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("Member.Treeview.Heading", font=("Verdana", 15))
+        style.configure("Member.Treeview", font=("Verdana", 12))
+
         #Define columns and treeview for table
         member_table_columns = ("Member_ID", "First_Name", "Last_Name")
-        members_table = ttk.Treeview(self.frame, columns=member_table_columns, height=50, show="headings") #show="headings" hides the default #0 column at the start
+        members_table = ttk.Treeview(self.frame, columns=member_table_columns, height=30, style="Member.Treeview", show="headings") #show="headings" hides the default #0 column at the start
 
         #Define column headings
         members_table.heading("Member_ID", text="ID")
@@ -51,7 +57,7 @@ class MemberPage:
         #Set column widths
         members_table.column("Member_ID", width=50)
         members_table.column("First_Name", width=200)
-        members_table.column("Last_Name", width=200)
+        members_table.column("Last_Name", width=251)
 
         #Places the table
         members_table.place(x=480, y = self.notebook_y_position + 25)
@@ -61,7 +67,7 @@ class MemberPage:
         
         #Creates and places a scrollbar for the listbox
         members_scroll = ttk.Scrollbar(self.frame, orient=tk.VERTICAL, command=members_table.yview)
-        members_scroll.place(x=972, y=50)
+        members_scroll.place(x=985, y=60)
         #Configures the scrollbar to the listbox
         members_table.config(yscroll = members_scroll.set)
         
@@ -102,7 +108,7 @@ class MemberPage:
         self.setup_tabs(member_notebook)
         
         #Places the notebook and tabs
-        member_notebook.place(x=0, y=self.notebook_y_position, width=480, height=500)
+        member_notebook.place(x=0, y=self.notebook_y_position, width=480, height=670)
 
         return member_notebook
 
