@@ -89,26 +89,29 @@ class LoginUI(ttk.Frame):
         password_entry.grid(column = 0, row = 6, ipadx = 100, ipady = 5, pady = 3)
 
     def setup_button(self):
-        login_button = ttk.Button(self.login_box, text = 'Login', command = lambda: validate_login_credentials(self.root, self.username_data.get(), self.password_data.get()))
+        login_button = ttk.Button(self.login_box, text = 'Login', command = lambda: handle_login(self.root, self.username_data.get(), self.password_data.get()))
         login_button.grid(column = 0, row = 7, ipadx = 50, ipady = 20, padx = 10, pady = 15)
 
 
-def validate_login_credentials(root, username, password):
-    connection = sqlite3.connect('SystemDatabase.db')
-    cursor = connection.cursor()
+def handle_login(root, username, password):
+    (valid, row) = validate_login_credentials(username, password)
 
-    cursor.execute('''SELECT PasswordHash, FirstName, LastName, EmployeeID FROM Employees WHERE Username = ?''', (username,))
-
-    row = cursor.fetchone()
-
-    connection.close()
-
-    if row is None or not bcrypt.checkpw(password.encode('utf-8'), row[0]):
-        showerror(title = "Login Failed!", message = "Fail! An account with these credentials does not exist in our system! If you believe this is a mistake, please contact your organisation's administrator(s) or our IT Service Desk.")
-    else:
+    if valid:
         display_name = f"{row[1]} {row[2]}"
         session.set(row[3])
         showinfo(title="Login Successful!",
                  message=f"Success! The login details you have entered are valid. Welcome {display_name} to SportsDev!")
         root.destroy()  # Destroy the login window
         SystemLayout()
+    else:
+        showerror(title = "Login Failed!", message = "Fail! An account with these credentials does not exist in our system! If you believe this is a mistake, please contact your organisation's administrator(s) or our IT Service Desk.")
+
+def validate_login_credentials(username, password) -> (bool, any):
+    with sqlite3.connect('SystemDatabase.db') as connection:
+        cursor = connection.cursor()
+
+        cursor.execute('''SELECT PasswordHash, FirstName, LastName, EmployeeID FROM Employees WHERE Username = ?''', (username,))
+
+        row = cursor.fetchone()
+
+    return row is not None and bcrypt.checkpw(password.encode('utf-8'), row[0]), row
