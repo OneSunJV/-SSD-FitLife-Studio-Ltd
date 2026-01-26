@@ -9,14 +9,20 @@ import re
 class MemberPage:
     def __init__(self, frame):
         self.bg_colour = "white"
-        self.button_font = ("Verdana", 20)
+
+        #Defines values for widget format and positioning
+        self.x_position = 20
+        self.x_gap = 160
+        self.y_position = 30
+        self.y_gap = 40
+        self.button_font = ("Verdana", 15)
+        self.button_width = 32
+        self.button_height = 1
+        self.notebook_y_position = 20
 
         #Creates frame for the members page to house widgets
         self.frame = frame
         self.frame.config(bg=self.bg_colour)
-
-        #Calls a subroutine to create a title label widget
-        self.setup_title()
 
         #Creates and places a listbox to display existing member information to the right of the notebook view
         self.member_table = self.setup_member_table()
@@ -29,26 +35,13 @@ class MemberPage:
 
     def get_frame(self):
         return self.frame
-    
-    #Subroutine to create the page title label "Members"
-    def setup_title(self):
-        #Declares a TTK Style
-        style = ttk.Style()
-        style.theme_use("clam")
-        #Defines the characteristics of the TTK Style
-        style.configure("MemberStyle.TLabel", background=self.bg_colour, foreground="black", font=("Verdana", 35))
-        
-        #Creates a label in the current frame with the configured style
-        title_label = ttk.Label(self.frame, text="Members", style="MemberStyle.TLabel")
-        #Places the label in the top-left of the frame
-        title_label.place(x=0, y=0)
 
     #Function that defines, configures and returns a list box showing members
     def setup_member_table(self):
 
         #Define columns and treeview for table
         member_table_columns = ("Member_ID", "First_Name", "Last_Name")
-        members_table = ttk.Treeview(self.frame, columns=member_table_columns, height=20)
+        members_table = ttk.Treeview(self.frame, columns=member_table_columns, height=50, show="headings") #show="headings" hides the default #0 column at the start
 
         #Define column headings
         members_table.heading("Member_ID", text="ID")
@@ -57,18 +50,18 @@ class MemberPage:
 
         #Set column widths
         members_table.column("Member_ID", width=50)
-        members_table.column("First_Name", width=100)
-        members_table.column("Last_Name", width=100)
+        members_table.column("First_Name", width=200)
+        members_table.column("Last_Name", width=200)
 
         #Places the table
-        members_table.place(x=530, y=85)
+        members_table.place(x=480, y = self.notebook_y_position + 25)
 
         #Binds the selection of a table record to the self.populate_member_details subroutine to populate widgets with the details of the selected member
         members_table.bind("<<TreeviewSelect>>", self.treeview_item_selected)
         
         #Creates and places a scrollbar for the listbox
         members_scroll = ttk.Scrollbar(self.frame, orient=tk.VERTICAL, command=members_table.yview)
-        members_scroll.place(x=972, y=85)
+        members_scroll.place(x=972, y=50)
         #Configures the scrollbar to the listbox
         members_table.config(yscroll = members_scroll.set)
         
@@ -107,6 +100,9 @@ class MemberPage:
         member_notebook = ttk.Notebook(self.frame, name="member_notebook", style="TNotebook")
         
         self.setup_tabs(member_notebook)
+        
+        #Places the notebook and tabs
+        member_notebook.place(x=0, y=self.notebook_y_position, width=480, height=500)
 
         return member_notebook
 
@@ -123,18 +119,15 @@ class MemberPage:
         member_notebook.add(add_member_tab, text="Add New Member")
         member_notebook.add(find_member_tab, text="Find Member")
 
-        #Places the notebook and tabs
-        member_notebook.place(x=0, y=60, width=500, height=3940)
-
     #Function to define, configure and return the Manage Member tab of the notebook
     def setup_manage_tab(self, member_notebook):
         manage_member_tab = tk.Frame(member_notebook, name = "manage_member_tab", background=self.bg_colour)
 
-        edit_btn = tk.Button(manage_member_tab, name="edit_btn", text="Edit", font=self.button_font, command=self.setup_edit_window)
-        edit_btn.place(x=120, y=30)
+        edit_btn = tk.Button(manage_member_tab, name="edit_btn", text="Edit", font=self.button_font, height=self.button_height, width=self.button_width, command=self.setup_edit_window)
+        edit_btn.place(x = self.x_position, y = self.y_position)
 
-        delete_btn = tk.Button(manage_member_tab, name="delete_btn", text="Delete", font=self.button_font, command=self.delete_member)
-        delete_btn.place(x=270, y=30)
+        delete_btn = tk.Button(manage_member_tab, name="delete_btn", text="Delete", font=self.button_font, height=self.button_height, width=self.button_width, command=self.delete_member)
+        delete_btn.place(x= self.x_position, y = self.y_position + (self.y_gap*1.25))
 
         return manage_member_tab
     
@@ -161,25 +154,30 @@ class MemberPage:
 
     def add_widgets(self, frame, tab_name):
 
-        #defines a ttk style used for all labels in this tab
+        #Defines local variables for positioning values
+        y_position = self.y_position
+        y_gap = self.y_gap
+        x_position = self.x_position
+        x_gap = self.x_gap
+
+        #Defines a ttk style used for all labels in this tab
         widget_font = ("Verdana", 15, )
         label_style = ttk.Style()
         label_style.theme_use("clam")
         label_style.configure("MemberWidget.TLabel", font=widget_font, background=self.bg_colour)
 
-        #defines values for widget positioning
-        x_position = 20
-        x_gap = 160
-        y_position = 30
-        y_gap = 40
-
         #ID label & entry
         if (tab_name == "find") or (tab_name == "edit"):
-            id_lbl = ttk.Label(frame, text="ID", style="MemberWidget.TLabel")
-            id_lbl.place(x = x_position, y = y_position)
+
             id_txt = ttk.Entry(frame, name="id_txt", font=widget_font)
-            if tab_name == "edit": id_txt.state(["disabled"])
-            id_txt.place(x = x_position + x_gap, y = y_position)
+            #Adjusts widget positioning and format due to being within different window
+            if tab_name == "edit": 
+                y_position -=10
+                id_txt.state(["disabled"])
+            id_txt.place(x = self.x_position + self.x_gap, y = y_position)
+            id_lbl = ttk.Label(frame, text="ID", style="MemberWidget.TLabel")
+            id_lbl.place(x = self.x_position, y = y_position)
+
             #Update y-position for next label & entry
             y_position += y_gap
 
@@ -193,32 +191,32 @@ class MemberPage:
         last_name_lbl = ttk.Label(frame, text="Last Name", style="MemberWidget.TLabel")
         last_name_lbl.place(x = x_position, y = y_position + (y_gap*1))
         last_name_txt = ttk.Entry(frame, name="last_name_txt", font=widget_font)
-        last_name_txt.place(x = x_position + x_gap, y= y_position + (y_gap*1))
+        last_name_txt.place(x = x_position + x_gap, y = y_position + (y_gap*1))
 
         #Date of birth label & datepicker
         dob_lbl = ttk.Label(frame, text="Date of Birth", style="MemberWidget.TLabel")
         dob_lbl.place(x = x_position, y = y_position + (y_gap*2))
         dob_dtp = DateEntry(frame, font=widget_font, background="lightgray", foreground="black", date_pattern="dd-mm-yyyy", showweeknumbers=False)
-        dob_dtp.place(x = x_position + x_gap + 105, y= y_position + (y_gap*2))
+        dob_dtp.place(x = x_position + x_gap + 105, y = y_position + (y_gap*2))
         dob_dtp.bind("<FocusOut>", lambda e: dob_dtp._top_cal.withdraw())
 
         #Email address label & entry
         email_lbl = ttk.Label(frame, text="Email", style="MemberWidget.TLabel")
         email_lbl.place(x = x_position, y = y_position + (y_gap*3))
         email_txt = ttk.Entry(frame, name="email_txt", font=widget_font)
-        email_txt.place(x = x_position + x_gap, y= y_position + (y_gap*3))
+        email_txt.place(x = x_position + x_gap, y = y_position + (y_gap*3))
 
         #Phone number label & entry
         phone_lbl = ttk.Label(frame, text="Phone number", style="MemberWidget.TLabel")
         phone_lbl.place(x = x_position, y = y_position + (y_gap*4))
         phone_txt = ttk.Entry(frame, name="phone_txt", font=widget_font)
-        phone_txt.place(x = x_position + x_gap, y= y_position + (y_gap*4))
+        phone_txt.place(x = x_position + x_gap, y = y_position + (y_gap*4))
 
         #Membership type label & drop-down
         membership_lbl = ttk.Label(frame, text="Membership", style="MemberWidget.TLabel")
         membership_lbl.place(x = x_position, y = y_position + (y_gap*5))
         membership_cmb = ttk.Combobox(frame, name="membership_cmb", font=widget_font)
-        membership_cmb.place(x = x_position + x_gap, y= y_position + (y_gap*5))
+        membership_cmb.place(x = x_position + x_gap, y = y_position + (y_gap*5))
         membership_cmb["values"] = [1, 2, 3] #Adds values corresponding to the membership type
         membership_cmb.state(["readonly"]) #Ensures the user can't type in the box, only use the selections
 
@@ -226,13 +224,13 @@ class MemberPage:
         next_payment_date_lbl = ttk.Label(frame, text="Next Payment Date", style="MemberWidget.TLabel")
         next_payment_date_lbl.place(x = x_position, y = y_position + (y_gap*6))
         next_payment_date_dtp = DateEntry(frame, font=widget_font, background="lightgray", foreground="black", date_pattern="dd-mm-yyyy", showweeknumbers=False)
-        next_payment_date_dtp.place(x = x_position + x_gap + 105, y= y_position + (y_gap*6))
+        next_payment_date_dtp.place(x = x_position + x_gap + 105, y = y_position + (y_gap*6))
         next_payment_date_dtp.bind("<FocusOut>", lambda e: next_payment_date_dtp._top_cal.withdraw())
 
         #Selection statement to configure tab depending on if for the Add Member or Find Member tab - add_widgets() used commonly for both
         if tab_name == "add":
             #Button to save the details input in the above entries
-            add_btn = tk.Button(frame, name="add_btn", text="Add", font=self.button_font, command=lambda: self.add_member(
+            add_btn = tk.Button(frame, name="add_btn", text="Add", font=self.button_font, height=self.button_height, width=self.button_width, command=lambda: self.add_member(
                 first_name_txt, 
                 last_name_txt, 
                 dob_dtp,
@@ -241,11 +239,11 @@ class MemberPage:
                 membership_cmb,
                 next_payment_date_dtp))
         
-            add_btn.place(x=120, y=400)
+            add_btn.place(x = x_position, y = y_position + (y_gap*7))
         
         elif tab_name == "edit":
             #Save button
-            save_btn = tk.Button(frame, name="save_btn", text="Save", font=self.button_font, command=lambda: self.save_member(
+            save_btn = tk.Button(frame, name="save_btn", text="Save", font=self.button_font, height=self.button_height, width=self.button_width, command=lambda: self.save_member(
             frame,
             id_txt.get(),
             first_name_txt.get(), 
@@ -256,11 +254,11 @@ class MemberPage:
             membership_cmb.get(),
             next_payment_date_dtp.get_date()
             ))
-            save_btn.place(x=120, y=400)
+            save_btn.place(x = x_position, y = y_position + (y_gap*7))
 
             #Cancel button
-            cancel_btn = tk.Button(frame, name="cancel_btn", text="Cancel", font=self.button_font, command=frame.destroy)
-            cancel_btn.place(x=250, y=400)
+            cancel_btn = tk.Button(frame, name="cancel_btn", text="Cancel", font=self.button_font, height=self.button_height, width=self.button_width, command=frame.destroy)
+            cancel_btn.place(x = x_position, y= y_position + (y_gap*7*1.18))
         
         elif tab_name == "find":
             #sets all widgets to be readonly and disables date pickers and combo box in the Find Member tab
