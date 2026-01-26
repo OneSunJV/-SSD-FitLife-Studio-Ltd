@@ -156,9 +156,6 @@ class MemberPage:
         #Passes frame into subroutine to configure widgets
         self.add_widgets(find_member_tab, "find")
 
-        #Ability to select from list and view all member details
-        #Ability to filter by different member details (reuse from add new member tab?)
-
         return find_member_tab
     
 
@@ -177,7 +174,7 @@ class MemberPage:
         y_gap = 40
 
         #ID label & entry
-        if (tab_name == "find") or (tab_name == "filter") or (tab_name == "edit"):
+        if (tab_name == "find") or (tab_name == "edit"):
             id_lbl = ttk.Label(frame, text="ID", style="MemberWidget.TLabel")
             id_lbl.place(x = x_position, y = y_position)
             id_txt = ttk.Entry(frame, name="id_txt", font=widget_font)
@@ -201,8 +198,9 @@ class MemberPage:
         #Date of birth label & datepicker
         dob_lbl = ttk.Label(frame, text="Date of Birth", style="MemberWidget.TLabel")
         dob_lbl.place(x = x_position, y = y_position + (y_gap*2))
-        dob_dtp = DateEntry(frame, font=widget_font, date_pattern="dd-mm-yyyy", background="white", showweeknumbers=False)
+        dob_dtp = DateEntry(frame, font=widget_font, background="lightgray", date_pattern="dd-mm-yyyy", showweeknumbers=False)
         dob_dtp.place(x = x_position + x_gap + 105, y= y_position + (y_gap*2))
+        dob_dtp.bind("<FocusOut>", lambda e: dob_dtp._top_cal.withdraw())
 
         #Email address label & entry
         email_lbl = ttk.Label(frame, text="Email", style="MemberWidget.TLabel")
@@ -221,7 +219,7 @@ class MemberPage:
         membership_lbl.place(x = x_position, y = y_position + (y_gap*5))
         membership_cmb = ttk.Combobox(frame, name="membership_cmb", font=widget_font)
         membership_cmb.place(x = x_position + x_gap, y= y_position + (y_gap*5))
-        membership_cmb["values"] = [1, 2, 3] #Adds integer values corresponding to the membership type
+        membership_cmb["values"] = [1, 2, 3] #Adds values corresponding to the membership type
         membership_cmb.state(["readonly"]) #Ensures the user can't type in the box, only use the selections
 
         #Next payment date label and datepicker
@@ -229,6 +227,7 @@ class MemberPage:
         next_payment_date_lbl.place(x = x_position, y = y_position + (y_gap*6))
         next_payment_date_dtp = DateEntry(frame, font=widget_font, date_pattern="dd-mm-yyyy", background="white", showweeknumbers=False)
         next_payment_date_dtp.place(x = x_position + x_gap + 105, y= y_position + (y_gap*6))
+        next_payment_date_dtp.bind("<FocusOut>", lambda e: next_payment_date_dtp._top_cal.withdraw())
 
         #Selection statement to configure tab depending on if for the Add Member or Find Member tab - add_widgets() used commonly for both
         if tab_name == "add":
@@ -258,6 +257,10 @@ class MemberPage:
             next_payment_date_dtp.get_date()
             ))
             save_btn.place(x=120, y=400)
+
+            #Cancel button
+            cancel_btn = tk.Button(frame, name="cancel_btn", text="Cancel", font=self.button_font, command=frame.destroy)
+            cancel_btn.place(x=250, y=400)
         
         elif tab_name == "find":
             #sets all widgets to be readonly and disables date pickers and combo box in the Find Member tab
@@ -269,30 +272,6 @@ class MemberPage:
             phone_txt.state(["readonly"])
             membership_cmb.state(["disabled"])
             next_payment_date_dtp.state(["disabled"])
-
-            filter_btn = tk.Button(frame, name="filter_btn", text="Filter", font=self.button_font, command=self.setup_filter_window)
-            filter_btn.place(x=100, y=400)
-        
-        elif tab_name == "filter":
-            #Apply button
-            apply_btn = tk.Button(frame, name="apply_btn", text="Apply", font=self.button_font, command=lambda: self.apply_filter(
-            frame,
-            id_txt.get(),
-            first_name_txt.get(), 
-            last_name_txt.get(), 
-            dob_dtp.get_date(),
-            email_txt.get(),
-            phone_txt.get(), 
-            membership_cmb.get(),
-            next_payment_date_dtp.get_date()
-            ))
-            apply_btn.place(x=120, y=400)
-
-        #Adds a cancel button to both edit and filter pages
-        if (tab_name == "edit") or (tab_name == "filter"):
-            #Cancel button
-            cancel_btn = tk.Button(frame, name="cancel_btn", text="Cancel", font=self.button_font, command=frame.destroy)
-            cancel_btn.place(x=250, y=400)
 
     #Subroutine to create and display a window for the user to edit the currently selected member
     def setup_edit_window(self):
@@ -322,11 +301,11 @@ class MemberPage:
                 UPDATE Members
                 SET FirstName = "{first_name}",
                     LastName = "{last_name}",
-                    DateOfBirth = {dob},
+                    DateOfBirth = "{dob}",
                     EmailAddress = "{email}",
                     PhoneNumber = "{phone}",
                     MembershipType = {membership_type},
-                    NextPaymentDate = {next_payment_date}
+                    NextPaymentDate = "{next_payment_date}"
                 WHERE MemberID="{id}";
                 ''')
         connection.commit()
@@ -381,7 +360,7 @@ class MemberPage:
             #Inserts the values input into the database
             cursor.execute(f'''
                     INSERT INTO Members(FirstName, LastName, DateOfBirth, EmailAddress, PhoneNumber, MembershipType, NextPaymentDate)
-                    VALUES ("{first_name}", "{last_name}", {dob}, "{email}", "{phone}", {membership_type}, {next_payment_date});
+                    VALUES ("{first_name}", "{last_name}", "{dob}", "{email}", "{phone}", {membership_type}, "{next_payment_date}");
                     ''')
             connection.commit()
             connection.close()
@@ -512,23 +491,6 @@ class MemberPage:
                 self.set_widget_value(window.nametowidget(f"{frame}.phone_txt"), selected_member["phone"])
                 self.set_widget_value(window.nametowidget(f"{frame}.membership_cmb"), selected_member["membership_type"])
                 self.set_widget_value(window.nametowidget(f"{frame}.!dateentry2"), selected_member["next_payment_date"])
-
-    #Subroutine to create, configure and display a window where the user can input data to filter by
-    def setup_filter_window(self):
-        filter_win = tk.Tk()
-        filter_win.geometry("500x500")
-        filter_win.title("Filter")
-        filter_win.config(bg=self.bg_colour)
-
-        self.add_widgets(filter_win, "filter")
-
-        filter_win.mainloop()
-    
-    #Subroutine to apply the filters input by the user - called by pressing Apply button
-    def apply_filter(self, filter_win, id, first_name, last_name, dob, email, phone, membership, next_payment_date):
-        self.member_table.delete(0, tk.END)
-        #needs code adding to check database and only display matching records
-        filter_win.destroy()
 
 
 
