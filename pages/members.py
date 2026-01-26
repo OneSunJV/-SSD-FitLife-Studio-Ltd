@@ -341,7 +341,9 @@ class MemberPage:
     def delete_member(self):
         #checks that the user wants to delete the selected user
         selected_member = self.get_selected_member()
-        delete_confirmed = messagebox.askokcancel(title = "Delete Member", message = f"Are you sure you want to delete {selected_member["first_name"]} {selected_member["last_name"]}?")
+        first_name = selected_member["first_name"]
+        last_name = selected_member["last_name"]
+        delete_confirmed = messagebox.askokcancel(title = "Delete Member", message = f"Are you sure you want to delete {first_name} {last_name}?")
         #if user confirms OK then user is deleted from database and listbox
         if selected_member and delete_confirmed: 
             #Connects to database
