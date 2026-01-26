@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter.messagebox import showerror
 from tkcalendar import DateEntry
 import sqlite3
 from datetime import datetime
@@ -7,8 +8,9 @@ from datetime import datetime
 TRAINERS = []
 TRAINERS_WITH_ID_APPENDED = []
 CLASSTYPES = []
-TIMES = ["9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00"]
-LOCATIONS = ["Location A", "Location B", "Location C"]
+CLASSTYPES_WITH_ID_APPENDED = []
+TIMES = ["","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00"]
+LOCATIONS = ["","Location A", "Location B", "Location C"]
 
 #Getting Trainers
 connection = sqlite3.connect('SystemDatabase.db')
@@ -19,17 +21,16 @@ connection.close()
 for trainer_data in trainers_entries:
     TRAINERS.append(str(trainer_data[0]) +  " " + str(trainer_data[1]))
     TRAINERS_WITH_ID_APPENDED.append((trainer_data[2], str(trainer_data[0]) +  " " + str(trainer_data[1])))
-    print((trainer_data[2], str(trainer_data[0]) +  " " + str(trainer_data[1])))
 
 #Getting Class Types
 connection = sqlite3.connect('SystemDatabase.db')
 cursor_object = connection.cursor()
-cursor_object.execute('''SELECT ClassType FROM Classes''')
+cursor_object.execute('''SELECT ClassID, ClassType FROM Classes''')
 class_types_entries = cursor_object.fetchall()
 connection.close()
-for class_types_data in class_types_entries:
-    for class_type in class_types_data:
-        CLASSTYPES.append(str(class_type))
+for class_type in class_types_entries:
+    CLASSTYPES.append(str(class_type[1]))
+    CLASSTYPES_WITH_ID_APPENDED.append((class_type[0], str(class_type[1])))
 
 
 class ClassManagementPage:
@@ -110,6 +111,10 @@ class ClassManagementPage:
         self.sessionLocation_combobox = ttk.Combobox(self.filters_frame, values=LOCATIONS)
         self.sessionLocation_combobox.grid(column=5, padx=5, row=2, sticky=tk.EW)
 
+        self.date_filter_disabled_check = tk.BooleanVar()
+        self.disable_date_checkbox = ttk.Checkbutton(self.filters_frame, text="Disable date filter", command=self.disable_or_enable_date_filter, variable=self.date_filter_disabled_check)
+        self.disable_date_checkbox.grid(column=0, row=3, columnspan=2, sticky=tk.EW)
+
         # Defining action buttons
         search_sessions_button = ttk.Button(self.filters_frame, text="🔍︎Search sessions", command=lambda: self.search_sessions())
         search_sessions_button.grid(column=4, row=3, sticky=tk.EW)
@@ -159,38 +164,82 @@ class ClassManagementPage:
         self.sessions_table.column("Session Start Time", width=80)
         self.sessions_table.column("Session Finish Time", width=80)
         self.sessions_table.column("Session Location", width=100)
-
-        self.sessions_table.insert("", tk.END, values=(1,2,3,4,5,6,7),)
         
         self.sessions_table.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=5)
- 
     
-    def search_sessions(self):
-        for row in self.sessions_table.get_children():
-            self.sessions_table.delete(row)
+    def disable_or_enable_date_filter(self):
+        if self.date_filter_disabled_check.get() == True:
+            self.sessionDate_dateEntry.config(state=["disabled"])
+        else:
+            self.sessionDate_dateEntry.config(state=['normal'])
 
-        connection = sqlite3.connect('SystemDatabase.db')
-        cursor_object = connection.cursor()
-        cursor_object.execute('''SELECT SessionID, ClassType, TrainerID, SessionDate, SessionStartTime, SessionFinishTime, SessionLocation FROM Sessions INNER JOIN Classes ON Sessions.ClassID = Classes.ClassID;''')
-        search_results_tuple = cursor_object.fetchall()
-        connection.close()
-        session_list = []
-        trainer_name = ''
-        for session_tuple in search_results_tuple:
-            for trainer in TRAINERS_WITH_ID_APPENDED:
-                if session_tuple[2] == trainer[0]:
-                    trainer_name = trainer[1]
-            session_list.append((session_tuple[0], session_tuple[1], trainer_name, session_tuple[3], session_tuple[4], session_tuple[5], session_tuple[6]))
-        for session in session_list:
-            self.sessions_table.insert("", tk.END, values=session,)
+    def get_parameters_from_entries(self):
+        self.session_ID = str(self.sessionID_entrybox.get())
+        self.class_type = ''
+        self.trainer_ID = '' # No employee should have an ID of just 0
+        self.session_date = ''
+        if self.date_filter_disabled_check.get() == False:
+            self.session_date = (self.sessionDate_dateEntry.get_date()).strftime("%d-%m-%Y")
+        self.session_start_time = str(self.sessionStartTime_combobox.get())
+        self.session_end_time = str(self.sessionFinishTime_combobox.get())
+        self.session_location = str(self.sessionLocation_combobox.get())
+
+        for trainer in TRAINERS_WITH_ID_APPENDED:
+            if trainer[1] == str(self.trainer_combobox.get()):
+                self.trainer_ID = str(trainer[0])
+                break
+
+        for classtype in CLASSTYPES_WITH_ID_APPENDED:
+            if classtype[1] == str(self.classType_entrybox.get()):
+                self.class_type = str(classtype[0])
+                break
+
+    def search_sessions(self):
+        self.get_parameters_from_entries()
+
+        if self.session_ID and self.class_type and self.trainer_ID and self.session_date and self.session_start_time and self.session_end_time == '':
+            self.refresh_treeview()
+        else:
+            for row in self.sessions_table.get_children():
+                self.sessions_table.delete(row)
+
+            self.session_ID = self.session_ID + '%'
+            self.class_type =  self.class_type + '%'
+            self.trainer_ID =  self.trainer_ID + '%'
+            self.session_start_time =  self.session_start_time + '%'
+            self.session_end_time =  self.session_end_time + '%'
+
+            print(self.session_ID)
+            print(self.class_type)
+            print(self.trainer_ID)
+            print(self.session_date)
+            print(self.session_start_time)
+            print(self.session_end_time)
+            print(self.session_location)
+            connection = sqlite3.connect('SystemDatabase.db')
+            cursor_object = connection.cursor()
+            cursor_object.execute('''SELECT SessionID, ClassType, TrainerID, SessionDate, SessionStartTime, SessionFinishTime, SessionLocation FROM Sessions 
+                                  INNER JOIN Classes ON Sessions.ClassID = Classes.ClassID 
+                                  WHERE SessionID LIKE ? AND ClassType LIKE ? AND TrainerID LIKE ? AND SessionDate LIKE ? AND SessionStartTime LIKE ? AND SessionFinishTime LIKE ? AND SessionLocation LIKE ? 
+                                  GROUP BY SessionID, ClassType, TrainerID, SessionDate, SessionStartTime, SessionFinishTime, SessionLocation;''', 
+                                  (self.session_ID, self.class_type, self.trainer_ID, self.session_date, self.session_start_time, self.session_end_time, self.session_location))
+            search_results_tuple = cursor_object.fetchall()
+            print(search_results_tuple)
+            connection.close()
+            session_list = []
+            trainer_name = ''
+            for session_tuple in search_results_tuple:
+                for trainer in TRAINERS_WITH_ID_APPENDED:
+                    if session_tuple[2] == trainer[0]:
+                        trainer_name = trainer[1]
+                session_list.append((session_tuple[0], session_tuple[1], trainer_name, session_tuple[3], session_tuple[4], session_tuple[5], session_tuple[6]))
+            for session in session_list:
+                self.sessions_table.insert("", tk.END, values=session,)
+            #except:
+                #showerror(title = "Error 404", message = "Something went wrong!")
 
     def create_session(self):
-        self.session_ID = self.sessionID_entrybox.get()
-        self.class_type = self.classType_entrybox.get()
-        self.trainer_name = self.trainer_combobox.get()
-        self.session_date = self.sessionDate_dateEntry.get_date()
-        self.session_start_time = self.sessionStartTime_combobox.get()
-        self.session_end_time = self.sessionFinishTime_combobox.get()
+        pass     
     
     def delete_session(self):
         pass
