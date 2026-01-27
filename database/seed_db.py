@@ -66,8 +66,8 @@ for day in range(1, days_in_month + 1):
 
         start_time = datetime.now()
         finish_time = start_time + timedelta(hours=1)
-        start_time = start_time.strftime("%H:%M:%S")
-        finish_time = finish_time.strftime("%H:%M:%S")
+        start_time = start_time.strftime("%H:%M")
+        finish_time = finish_time.strftime("%H:%M")
 
         connection.execute(f'''INSERT INTO Sessions
                               (SessionID, ClassID, TrainerID, SessionStartTime, SessionFinishTime, SessionDate, SessionLocation)
