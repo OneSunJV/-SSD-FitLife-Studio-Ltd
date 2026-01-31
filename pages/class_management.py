@@ -3,13 +3,12 @@ from tkinter import ttk
 from tkinter.messagebox import showerror, showinfo
 from tkcalendar import DateEntry
 import sqlite3
-from datetime import datetime
 
-TRAINERS = []
+TRAINERS = [""]
 TRAINERS_WITH_ID_APPENDED = []
-CLASSTYPES = []
+CLASSTYPES = [""]
 CLASSTYPES_WITH_ID_APPENDED = []
-TIMES = ["","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00"]
+TIMES = ["","09:00:00","09:30:00","10:00:00","10:30:00","11:00:00","11:30:00","12:00:00","12:30:00","13:00:00","13:30:00","14:00:00","14:30:00","15:00:00","15:30:00","16:00:00"]
 LOCATIONS = ["","Location A", "Location B", "Location C"]
 
 #Getting Trainers
@@ -32,17 +31,14 @@ for class_type in class_types_entries:
     CLASSTYPES.append(str(class_type[1]))
     CLASSTYPES_WITH_ID_APPENDED.append((class_type[0], str(class_type[1]))) # (ClassID, ClassType)
 
-
-
 class ClassManagementPage:
     def __init__(self, sample_frame):
         self.frame = sample_frame
         self.frame.config(bg="white")
 
-        # Defines the columns in the main frame
+
         self.frame.columnconfigure(0, weight=1)
 
-        # Defines the rows in the main frame
         self.frame.rowconfigure(0, weight=1)
         self.frame.rowconfigure(1, weight=3)
 
@@ -134,22 +130,20 @@ class ClassManagementPage:
 
 
     def init_treeview_frame(self):
+        # Defining treeview frame
         self.treeview_frame = ttk.Frame(self.frame)
 
-        # Defines the rows in the treeview frame
         self.treeview_frame.rowconfigure(0, weight=1)
         self.treeview_frame.rowconfigure(1, weight=10)
-
-        # Defines the columns in the treeview frame
         self.treeview_frame.columnconfigure(0, weight=1)
 
         self.treeview_frame.grid(column=0, row=1, padx=5, pady=5, sticky=tk.NSEW)
 
-        # Defining title
+        # Defining title on top of treeview
         session_records_label = ttk.Label(self.treeview_frame, text="Studio session records", font=("Arial", 11, "bold"))
         session_records_label.grid(column=0, row=0, sticky=tk.NSEW, padx=400)
 
-        # Defining Treeview
+        # Defining actual treeview/table
         table_columns = ("SessionID", "Class Type", "Trainer", "Session Date", "Session Start Time", "Session Finish Time", "Session Location")
         self.sessions_table = ttk.Treeview(self.treeview_frame, columns=table_columns, show="headings")
 
@@ -171,7 +165,7 @@ class ClassManagementPage:
         
         self.sessions_table.grid(column=0, row=1, sticky=tk.NSEW, padx=10, pady=5)
     
-
+#-----------------------------------------------------------------------------------------------------------------------#
 
     def disable_or_enable_date_filter(self):
         if self.date_filter_disabled_check.get() == True:
@@ -180,8 +174,7 @@ class ClassManagementPage:
             self.sessionDate_dateEntry.config(state=['normal'])
 
 
-
-    def get_parameters_from_entries(self):
+    def get_parameters_from_entries(self, db_action):
         self.session_ID = str(self.sessionID_entrybox.get())
         self.class_type = ''
         self.trainer_ID = ''
@@ -192,52 +185,59 @@ class ClassManagementPage:
         self.session_end_time = str(self.sessionFinishTime_combobox.get())
         self.session_location = str(self.sessionLocation_combobox.get())
 
-
-
-    def search_sessions(self):
-        self.get_parameters_from_entries()
-
         for trainer in TRAINERS_WITH_ID_APPENDED:
             if trainer[1] == str(self.trainer_combobox.get()):
                 self.trainer_ID = str(trainer[0])
                 break
+        
+        if db_action == "search":
+            self.class_type = str(self.classType_entrybox.get())
+        elif db_action == "create" or "delete":
+            for type_of_class in CLASSTYPES_WITH_ID_APPENDED:
+                if type_of_class[1] == str(self.classType_entrybox.get()):
+                    self.class_type = str(type_of_class[0])
+                    break
 
-        for type_of_class in CLASSTYPES_WITH_ID_APPENDED:
-            if type_of_class[1] == str(self.classType_entrybox.get()):
-                self.class_type = str(type_of_class[0])
-                break
 
+    def search_sessions(self):
+        self.get_parameters_from_entries("search")
+        
         if self.session_ID and self.class_type and self.trainer_ID and self.session_date and self.session_start_time and self.session_end_time and self.session_location == '':
             self.refresh_treeview()
         else:
             try:
+                # Deletes data currently in table so that its empty for the data to be inserted
                 for row in self.sessions_table.get_children():
                     self.sessions_table.delete(row)
-
-                self.session_ID = self.session_ID + '%'
-                self.class_type =  self.class_type + '%'
-                self.trainer_ID =  self.trainer_ID + '%'
-                self.session_date = self.session_date + '%'
-                self.session_start_time =  self.session_start_time + '%'
-                self.session_end_time =  self.session_end_time + '%'
-                self.session_location = self.session_location + '%'
-
+                # Applying an SQL value that tells SQL to find similar entries to the parameters entered by the user
+                self.session_ID = '%' + self.session_ID + '%'
+                self.class_type =  '%' + self.class_type + '%'
+                self.trainer_ID =  '%' + self.trainer_ID + '%'
+                self.session_date = '%' + self.session_date + '%'
+                self.session_start_time =  '%' + self.session_start_time + '%'
+                self.session_end_time =  '%' + self.session_end_time + '%'
+                self.session_location = '%' + self.session_location + '%'
+                # Parameters are plugged into an SQL SELECT command
                 connection = sqlite3.connect('SystemDatabase.db')
                 cursor_object = connection.cursor()
                 cursor_object.execute('''SELECT SessionID, ClassType, TrainerID, SessionDate, SessionStartTime, SessionFinishTime, SessionLocation FROM Sessions 
                                     INNER JOIN Classes ON Sessions.ClassID = Classes.ClassID 
                                     WHERE SessionID LIKE ? AND ClassType LIKE ? AND TrainerID LIKE ? AND SessionDate LIKE ? AND SessionStartTime LIKE ? AND SessionFinishTime LIKE ? AND SessionLocation LIKE ? 
                                     GROUP BY SessionID, ClassType, TrainerID, SessionDate, SessionStartTime, SessionFinishTime, SessionLocation''', 
-                                    (self.session_ID, self.class_type, self.trainer_ID, self.session_date, self.session_start_time, self.session_end_time, self.session_location))
+                                    (self.session_ID, self.class_type, self.trainer_ID, self.session_date, self.session_start_time, self.session_end_time, self.session_location,))
+                # Fetches entries that meet the SQL SELECT statement
                 search_results_tuple = cursor_object.fetchall()
                 connection.close()
+                # This lsit is created so it can store sessions with the Trainer's full name instead of the Trainer ID
                 session_list = []
                 trainer_name = ''
+                # Goes through each tuple/entry and looks for the TrainerID and then replaces it with the Trainer's full name and adds all the details into a tuple that is appended to a new list
                 for session_tuple in search_results_tuple:
                     for trainer in TRAINERS_WITH_ID_APPENDED:
                         if session_tuple[2] == trainer[0]:
                             trainer_name = trainer[1]
                     session_list.append((session_tuple[0], session_tuple[1], trainer_name, session_tuple[3], session_tuple[4], session_tuple[5], session_tuple[6]))
+                # Goes through the list of sessions (the ones with the Trainer full name) and inserts each entry into the treeview/table
                 for session in session_list:
                     self.sessions_table.insert("", tk.END, values=session,)
             except:
@@ -246,83 +246,135 @@ class ClassManagementPage:
 
 
     def create_session(self):
-        self.get_parameters_from_entries()
+        self.get_parameters_from_entries("create")
 
-        self.class_ID = ''
+        self.trainer_ID_integer = 0
+        self.class_ID = 0
+        self.empty_params_flag = 0
+        self.valid_entries_flag = False
+        self.valid_trainer_flag = False
+        self.valid_class_type_flag = False
+  
+        # 1st Check - Validates if TrainerID is an integer
+        try:
+            self.trainer_ID_integer = int(self.trainer_ID)
+            self.valid_trainer_flag = True
+        except:
+            showerror(title = "Invalid Trainer", message = "The trainer you have selected does not match any of the options in the dropdown!")
 
-        # Fetches TrainerID
-        for trainer in TRAINERS_WITH_ID_APPENDED:
-            if trainer[1] == str(self.trainer_combobox.get()):
-                self.trainer_ID = str(trainer[0])
-                break
-        
-        # Fetches ClassID
-        for type_of_class in CLASSTYPES_WITH_ID_APPENDED:
-            if type_of_class[1] == str(self.classType_entrybox.get()):
-                self.class_ID = str(type_of_class[1])
-                break
+        # 2nd Check - Validates if ClassID is an integer
+        try:
+            self.class_ID = int(self.class_type)
+            self.valid_class_type_flag = True
+        except:
+            showerror(title = "Invalid Trainer", message = "The class type you have selected does not match any of the options in the dropdown!")
 
-        # 1st Check - Checks if any entries are empty. 
-        if self.session_ID or self.class_ID or self.trainer_ID or self.session_date or self.session_start_time or self.session_end_time or self.session_location != '':
-            try:
-                # 2nd Check - If SessionID is a positive integer
-                self.session_ID = int(self.session_ID)
+        PARAMETERS = [self.session_ID, self.class_ID, self.trainer_ID_integer, self.session_date, self.session_start_time, self.session_end_time, self.session_location]
 
-                # 3rd Check - If this SessionID already exists
-                connection = sqlite3.connect('SystemDatabase.db')
-                cursor_object = connection.cursor()
-                cursor_object.execute('''SELECT SessionID FROM Sessions;''')
-                session_id_results = cursor_object.fetchall()
-                connection.close()
-                for session_id in session_id_results:
-                    if session_id != self.session_ID:
-                        self.valid_entries_flag = True
+        # 3rd Check - Checks if any entries are empty. 
+        for param in PARAMETERS:
+            if param == '':
+                self.empty_params_flag += 1
 
-                # 4th Check - If same data already exists
-                connection = sqlite3.connect('SystemDatabase.db')
-                cursor_object = connection.cursor()
-                cursor_object.execute('''SELECT * FROM Sessions WHERE 
-                                        SessionID LIKE ? AND ClassType LIKE ? AND TrainerID LIKE ? AND SessionDate LIKE ? AND SessionStartTime LIKE ? AND SessionFinishTime LIKE ? AND SessionLocation LIKE ?;''',
-                                        (self.class_type, self.trainer_ID, self.session_date, self.session_start_time, self.session_end_time, self.session_location))
-                new_session_id = cursor_object.fetchall()
-                if new_session_id != []:
-                    showerror(title = "Duplicate Session", message = "This session already exists!")
-                
-                # 5th Check - If a trainer is available during that session
-                cursor_object.execute('''SELECT * FROM Sessions WHERE 
-                                        TrainerID LIKE ? AND SessionDate LIKE ? AND SessionStartTime LIKE ? AND SessionFinishTime LIKE ?;''',
-                                        (self.trainer_ID, self.session_date, self.session_start_time, self.session_end_time))
-                clashing_sessions = cursor_object.fetchall()
-                if clashing_sessions != []:
-                    showerror(title = "Unavailable trainer", message = "The trainer that you have chosen is not available for this session!")
-                connection.close()
-                self.valid_entries_flag = True               
-            except:
-                showerror(title = "Invalid Session ID", message = "SessionID needs to be a positive integer!")
+        if self.empty_params_flag == 0:
+            if self.valid_trainer_flag == True and self.valid_class_type_flag == True:
+                try:
+                    # 4th Check - If SessionID is a positive integer
+                    self.session_ID = int(self.session_ID)
+
+                    # 5th Check - If this SessionID already exists
+                    self.session_ID = str(self.session_ID)
+                    connection = sqlite3.connect('SystemDatabase.db')
+                    cursor_object = connection.cursor()
+                    cursor_object.execute('''SELECT * FROM Sessions WHERE SessionID LIKE ?;''', (self.session_ID,))
+                    session_id_results = cursor_object.fetchall()
+                    connection.close()
+                    self.session_ID = int(self.session_ID)
+                    
+                    if session_id_results == []:
+                        # 6th Check - If same data already exists
+                        connection = sqlite3.connect('SystemDatabase.db')
+                        cursor_object = connection.cursor()
+                        cursor_object.execute('''SELECT SessionID FROM Sessions WHERE 
+                                            ClassID LIKE ? AND TrainerID LIKE ? AND SessionDate LIKE ? AND SessionStartTime LIKE ? AND SessionFinishTime LIKE ? AND SessionLocation LIKE ?;''',
+                                            (self.class_ID, self.trainer_ID_integer, self.session_date, self.session_start_time, self.session_end_time, self.session_location,))
+                        new_session_id = cursor_object.fetchall()
+
+                        if new_session_id == []:
+                            # 7th Check - If a trainer is available during that session
+                            cursor_object.execute('''SELECT * FROM Sessions WHERE 
+                                                    TrainerID LIKE ? AND SessionDate LIKE ? AND SessionStartTime LIKE ? AND SessionFinishTime LIKE ?;''',
+                                                    (self.trainer_ID_integer, self.session_date, self.session_start_time, self.session_end_time,))
+                            clashing_sessions = cursor_object.fetchall()
+                            connection.close()
+                            if clashing_sessions == []:
+                                self.valid_entries_flag = True
+                            else:
+                                showerror(title = "Unavailable trainer", message = "The trainer that you have chosen is not available for this session!")
+                        else:
+                            showerror(title = "Duplicate Data", message = "A session with this data already exists!")
+                    else:
+                        showerror(title = "SessionID already exists", message = "A session with this SessionID already exists!")
+                except:
+                    showerror(title = "Invalid Session ID", message = "SessionID needs to be a positive integer!")            
         else:
             showerror(title = "Empty entries", message = "All entries need to be filled!")
 
         if self.valid_entries_flag == True:
+            try:
+                connection = sqlite3.connect('SystemDatabase.db')
+                cursor_object = connection.cursor()
+                cursor_object.execute('''INSERT INTO Sessions(SessionID, ClassID, TrainerID, SessionDate, SessionStartTime, SessionFinishTime, SessionLocation) VALUES(?, ?, ?, ?, ?, ?, ?);''', 
+                                    (self.session_ID, self.class_ID, self.trainer_ID_integer, self.session_date, self.session_start_time, self.session_end_time, self.session_location))
+                connection.commit()
+                cursor_object.execute('''SELECT SessionID FROM Sessions WHERE 
+                                    ClassID LIKE ? AND TrainerID LIKE ? AND SessionDate LIKE ? AND SessionStartTime LIKE ? AND SessionFinishTime LIKE ? AND SessionLocation LIKE ?;''',
+                                    (self.class_ID, self.trainer_ID_integer, self.session_date, self.session_start_time, self.session_end_time, self.session_location,))
+                newly_added_session_id = cursor_object.fetchall()
+                connection.close()
+                self.valid_entries_flag = False
+                self.valid_session_ID_flag = False
+                self.valid_trainer_flag = False
+                self.valid_class_type_flag = False
+                self.empty_params_flag = False
+                showinfo(title="New session created!", message=f"Success! The session was created successfully and has a Session ID of {newly_added_session_id[0][0]}")
+            except:
+                showerror(title="Error 404", message="Something went wrong!")
+        
+
+    def delete_session(self):
+        self.session_ID_integer = 0
+        self.valid_session_ID_flag = False
+        self.get_parameters_from_entries("delete")
+
+        if self.session_ID and self.class_type and self.trainer_ID and self.session_date and self.session_start_time and self.session_end_time and self.session_location == '':
+            self.refresh_treeview()    
+        else:
+            try:
+                # Deletes data currently in table so that its empty for the data to be inserted
+                for row in self.sessions_table.get_children():
+                    self.sessions_table.delete(row)
+                # Check if then entered sessionID is a number
+                try:
+                    self.session_ID_integer = int(self.session_ID)
+                    self.valid_session_ID_flag = True
+                except:
+                    showerror(title="Invalid SessionID!", message="This SessionID is not valid!")
+                if self.valid_session_ID_flag == True:
                     try:
                         connection = sqlite3.connect('SystemDatabase.db')
                         cursor_object = connection.cursor()
-                        cursor_object.execute('''INSERT INTO Sessions(SessionID, ClassType, TrainerID, SessionDate, SessionStartTime, SessionFinishTime, SessionLocation) FROM Sessions VALUES(?, ?, ?, ?, ?, ?, ?);''', 
-                                            (self.session_ID, self.class_type, self.trainer_ID, self.session_date, self.session_start_time, self.session_end_time, self.session_location))
-                        cursor_object.execute('''SELECT SessionID FROM Sessions WHERE 
-                                            ClassType LIKE ? AND TrainerID LIKE ? AND SessionDate LIKE ? AND SessionStartTime LIKE ? AND SessionFinishTime LIKE ? AND SessionLocation LIKE ?;''',
-                                            (self.class_type, self.trainer_ID, self.session_date, self.session_start_time, self.session_end_time, self.session_location))
-                        new_session_id = cursor_object.fetchall()
+                        cursor_object.execute('''DELETE FROM Sessions WHERE SessionID = ?''', (self.session_ID_integer,))
+                        connection.commit()
                         connection.close()
-                        self.valid_entries_flag = False
-                        self.valid_session_ID_flag = False
-                        showinfo(title="New session created!", message=f"Success! The session was created successfully and has a Session ID of {new_session_id}")
+                        showinfo(title="Session deleted!", message=f"Success! The session was deleted!")
                     except:
-                        showerror(title="Error 404", message="Something went wrong!")
+                        showerror(title="Invalid SessionID!", message="This SessionID does not exist!")
+            except:
+                showerror(title = "Error 404", message = "Something went wrong!")
+        
         
 
-
-    def delete_session(self):
-        pass
 
     def refresh_treeview(self):
         for row in self.sessions_table.get_children():
