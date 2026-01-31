@@ -49,6 +49,29 @@ class ClassManagementPage:
         self.valid_session_ID_flag = False
         self.valid_entries_flag = False
 
+        self.load_data()
+
+    def load_data(self):
+        # Getting Trainers
+        with sqlite3.connect('SystemDatabase.db') as connection:
+            cursor_object = connection.cursor()
+            cursor_object.execute('''SELECT FirstName, LastName, EmployeeID
+                                     FROM Employees
+                                     WHERE EmployeeType LIKE ?''', ("TRAINER",))
+            trainers_entries = cursor_object.fetchall()
+            for trainer_data in trainers_entries:
+                TRAINERS.append(str(trainer_data[0]) + " " + str(trainer_data[1]))
+                TRAINERS_WITH_ID_APPENDED.append((trainer_data[2], str(trainer_data[0]) + " " + str(trainer_data[1])))
+                print((trainer_data[2], str(trainer_data[0]) + " " + str(trainer_data[1])))
+
+            # Getting Class Types
+            cursor_object.execute('''SELECT ClassType
+                                     FROM Classes''')
+            class_types_entries = cursor_object.fetchall()
+            for class_types_data in class_types_entries:
+                for class_type in class_types_data:
+                    CLASSTYPES.append(str(class_type))
+
     def init_filters_frame(self):
         self.filters_frame = ttk.Frame(self.frame)
 
