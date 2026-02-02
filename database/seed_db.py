@@ -1,6 +1,7 @@
 import random
 import sqlite3
-from datetime import datetime, timedelta
+import datetime
+from datetime import timedelta
 from calendar import monthrange
 import bcrypt
 
@@ -51,8 +52,8 @@ def seed_db():
                        (5, 'Yoga', 'Yoga Description');''')
 
 
-    current_month = datetime.now().month
-    current_year = datetime.now().year
+    current_month = datetime.datetime.now().month
+    current_year = datetime.datetime.now().year
 
     _, days_in_month = monthrange(current_year, current_month)
 
@@ -62,18 +63,20 @@ def seed_db():
 
     locations = ["Location A", "Location B", "Location C"]
     trainer_ids = [2,3]
+    hours = [9, 10, 11, 12, 13, 14, 15, 16]
+    minutes = [0, 30]
 
-    for i in range(0, random.randint(0,5)):
+    for i in range(0, 100):
         class_id = random.randint(1, 5)
 
-        start_time = datetime.now()
+        start_time = datetime.datetime(year=2000, month=1, day=1, hour=random.choice(hours), minute=random.choice(minutes), second=0)
         finish_time = start_time + timedelta(hours=1)
-        start_time = start_time.strftime("%H:%M")
-        finish_time = finish_time.strftime("%H:%M")
+        start_time = start_time.strftime("%H:%M:%S")
+        finish_time = finish_time.strftime("%H:%M:%S")
 
         connection.execute(f'''INSERT INTO Sessions
                               (SessionID, ClassID, TrainerID, SessionStartTime, SessionFinishTime, SessionDate, SessionLocation)
-                              VALUES ({idx}, {class_id}, {random.choice(trainer_ids)}, '{start_time}', '{finish_time}', '{datetime.now().strftime("%d-%m-%Y")}', '{random.choice(locations)}');''')
+                              VALUES ({idx}, {class_id}, {random.choice(trainer_ids)}, '{start_time}', '{finish_time}', '{datetime.datetime.now().strftime("%d-%m-%Y")}', '{random.choice(locations)}');''')
         idx += 1
 
     connection.commit()
