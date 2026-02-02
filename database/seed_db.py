@@ -58,26 +58,25 @@ def seed_db():
     _, days_in_month = monthrange(current_year, current_month)
 
     idx = 1
-    for day in range(1, days_in_month + 1):
-        date_str = f'{current_year}-{current_month:02}-{day:02}'
-
     locations = ["Location A", "Location B", "Location C"]
-    trainer_ids = [2,3]
-    hours = [9, 10, 11, 12, 13, 14, 15, 16]
-    minutes = [0, 30]
+    trainer_ids = [1, 2, 3]
 
-    for i in range(0, 100):
-        class_id = random.randint(1, 5)
+    for trainer_id in trainer_ids:
+        for day in range(1, days_in_month + 1):
+            date_str = f'{current_year}-{current_month:02}-{day:02}'
 
-        start_time = datetime.datetime(year=2000, month=1, day=1, hour=random.choice(hours), minute=random.choice(minutes), second=0)
-        finish_time = start_time + timedelta(hours=1)
-        start_time = start_time.strftime("%H:%M:%S")
-        finish_time = finish_time.strftime("%H:%M:%S")
+            for i in range(0, random.randint(0, 5)):
+                class_id = random.randint(1, 5)
 
-        connection.execute(f'''INSERT INTO Sessions
-                              (SessionID, ClassID, TrainerID, SessionStartTime, SessionFinishTime, SessionDate, SessionLocation)
-                              VALUES ({idx}, {class_id}, {random.choice(trainer_ids)}, '{start_time}', '{finish_time}', '{datetime.datetime.now().strftime("%d-%m-%Y")}', '{random.choice(locations)}');''')
-        idx += 1
+                start_hour = random.randint(0, 23)
+                start_time = datetime.datetime(current_year, current_month, day, start_hour).timestamp()
+                finish_time = start_time + 1 * 60 * 60
+
+                connection.execute(f'''INSERT INTO Sessions
+                                      (SessionID, ClassID, TrainerID, SessionStartTime, SessionFinishTime, SessionDate, SessionLocation)
+                                      VALUES ({idx}, {class_id}, {trainer_id}, '{start_time}', '{finish_time}', '{date_str}', '{random.choice(locations)}');''')
+
+                idx += 1
 
     connection.commit()
     connection.close()
